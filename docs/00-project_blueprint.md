@@ -1,5 +1,8 @@
 # QuickCart Telegram Bot – Functional & Technical Blueprint
 
+> **⚠️ CURRENT STATUS: IN DEVELOPMENT**
+> This document describes the **intended functionality** of the QuickCart bot. The current implementation is a foundational skeleton and many features described here are **not yet complete**. This blueprint serves as the architectural goal for development.
+
 > **Note:**
 > All inline/reply keyboard buttons must be in Bahasa Indonesia.
 > All bot explanations, notifications, and documentation are in English.

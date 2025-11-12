@@ -5,6 +5,9 @@
 
 ---
 
+> **⚠️ CURRENT STATUS: IN DEVELOPMENT**
+> This PRD outlines the **target features and requirements** for QuickCart. The project is currently in the foundational stage, and many of these features are pending implementation.
+
 ## Purpose
 This document captures all functional and non-functional requirements for QuickCart, serving as the single source of truth for what will be built and why.
 

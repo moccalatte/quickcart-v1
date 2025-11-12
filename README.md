@@ -1,5 +1,8 @@
 # QuickCart - Telegram Auto-Order Bot 🤖
 
+> **⚠️ Project Status: In Development**
+> This repository contains the foundational code for QuickCart. While the documentation describes the full vision, the core features are **currently under active development** and the bot is **not yet functional for production use**. This is a great time to contribute, but please be aware of its pre-release status.
+
 > **Automated digital product sales bot for Telegram with QRIS payment integration**
 
 QuickCart is a complete auto-order bot system for selling digital products (courses, accounts, vouchers, etc.) through Telegram. Customers can browse, order, and receive products automatically after payment - all without manual intervention.
@@ -146,11 +149,12 @@ Press `Ctrl+C` to stop viewing logs (bot keeps running in background).
    ```bash
    docker compose ps
    ```
+   *You should see all services (`app`, `db`, `redis`) in the `Up` state.*
 
 2. **Test the bot:**
-   - Open Telegram and search for your bot
-   - Send `/start` command
-   - You should see welcome message!
+   - Open Telegram and search for your bot.
+   - Send the `/start` command.
+   - **Expected Result:** You should see a simple welcome message like `Welcome <Your Name>! This is a placeholder. Full implementation coming soon.` This confirms the bot is running, but the full features are not yet implemented.
 
 ---
 
