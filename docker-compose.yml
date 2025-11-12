@@ -45,22 +45,22 @@ services:
 
   # Redis (OPTIONAL - comment out if you don't want to use Redis)
   # System will automatically use in-memory storage if Redis is unavailable
-  redis:
-    image: redis:7-alpine
-    container_name: quickcart_redis
-    restart: unless-stopped
-    command: redis-server --requirepass redis123
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - quickcart_network
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: quickcart_redis
+  #   restart: unless-stopped
+  #   command: redis-server --requirepass redis123
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
+  #   networks:
+  #     - quickcart_network
 
   # QuickCart Bot Application
   app:
@@ -77,8 +77,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+      # redis:
+      #   condition: service_healthy
     networks:
       - quickcart_network
     command: >

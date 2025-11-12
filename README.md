@@ -553,6 +553,9 @@ A: In Docker volumes. Run `docker volume ls` to see them.
 **Q: Bot doesn't respond to /start?**  
 A: Check logs with `docker compose logs -f app`. Common issues: wrong bot token, database not ready (wait 30s), or webhook conflicts.
 
+**Q: How do I run the CI/CD pipeline?**
+A: The CI/CD pipeline is automatically triggered on push and pull requests to the main and develop branches.
+
 ---
 
 **Ready to launch your digital store?**
