@@ -3,9 +3,6 @@ Unit tests for configuration management
 Tests settings loading, validation, and environment handling
 """
 
-import os
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 
@@ -27,12 +24,12 @@ class TestConfigurationBasics:
             from src.core.config import settings
 
             required_attrs = [
-                "app_name",
+                "store_name",
                 "debug",
-                "DATABASE_URL",
-                "AUDIT_DATABASE_URL",
-                "REDIS_URL",
-                "BOT_TOKEN",
+                "database_url",
+                "audit_database_url",
+                "redis_url",
+                "telegram_bot_token",
             ]
 
             for attr in required_attrs:
@@ -46,17 +43,17 @@ class TestConfigurationBasics:
         try:
             from src.core.config import settings
 
-            # Check DATABASE_URL exists and is string
-            assert isinstance(settings.DATABASE_URL, str)
-            assert len(settings.DATABASE_URL) > 0
+            # Check database_url exists and is string
+            assert isinstance(settings.database_url, str)
+            assert len(settings.database_url) > 0
 
-            # Check AUDIT_DATABASE_URL exists and is string
-            assert isinstance(settings.AUDIT_DATABASE_URL, str)
-            assert len(settings.AUDIT_DATABASE_URL) > 0
+            # Check audit_database_url exists and is string
+            assert isinstance(settings.audit_database_url, str)
+            assert len(settings.audit_database_url) > 0
 
             # URLs should contain postgresql
-            assert "postgresql" in settings.DATABASE_URL.lower()
-            assert "postgresql" in settings.AUDIT_DATABASE_URL.lower()
+            assert "postgresql" in settings.database_url.lower()
+            assert "postgresql" in settings.audit_database_url.lower()
 
         except ImportError:
             pytest.skip("Settings not available")
@@ -66,9 +63,11 @@ class TestConfigurationBasics:
         try:
             from src.core.config import settings
 
-            assert isinstance(settings.REDIS_URL, str)
-            assert len(settings.REDIS_URL) > 0
-            assert "redis://" in settings.REDIS_URL
+            # redis_url is Optional, so it can be None
+            if settings.redis_url:
+                assert isinstance(settings.redis_url, str)
+                assert len(settings.redis_url) > 0
+                assert "redis://" in settings.redis_url
 
         except ImportError:
             pytest.skip("Settings not available")
@@ -87,13 +86,13 @@ class TestEnvironmentSpecificSettings:
         except ImportError:
             pytest.skip("Settings not available")
 
-    def test_app_name_is_set(self):
-        """Verify app name is configured"""
+    def test_store_name_is_set(self):
+        """Verify store name is configured"""
         try:
             from src.core.config import settings
 
-            assert isinstance(settings.app_name, str)
-            assert len(settings.app_name) > 0
+            assert isinstance(settings.store_name, str)
+            assert len(settings.store_name) > 0
 
         except ImportError:
             pytest.skip("Settings not available")
@@ -102,28 +101,46 @@ class TestEnvironmentSpecificSettings:
 class TestSecuritySettings:
     """Test security-related configuration"""
 
-    def test_bot_token_exists(self):
-        """Verify bot token is configured (value doesn't matter in tests)"""
+    def test_telegram_bot_token_exists(self):
+        """Verify telegram bot token is configured"""
         try:
             from src.core.config import settings
 
-            assert hasattr(settings, "BOT_TOKEN")
+            assert hasattr(settings, "telegram_bot_token")
             # In test environment, token can be dummy value
-            assert settings.BOT_TOKEN is not None
+            assert settings.telegram_bot_token is not None
+            assert len(settings.telegram_bot_token) > 0
 
         except ImportError:
             pytest.skip("Settings not available")
 
-    def test_webhook_secret_exists(self):
-        """Verify webhook secret is configured"""
+    def test_admin_user_ids_exists(self):
+        """Verify admin user IDs are configured"""
         try:
             from src.core.config import settings
 
-            if hasattr(settings, "WEBHOOK_SECRET"):
-                assert settings.WEBHOOK_SECRET is not None
+            assert hasattr(settings, "admin_user_ids")
+            assert settings.admin_user_ids is not None
+            # Test the property that parses IDs
+            assert hasattr(settings, "admin_ids")
+            assert isinstance(settings.admin_ids, list)
 
-        except (ImportError, AttributeError):
-            pytest.skip("Settings or WEBHOOK_SECRET not available")
+        except ImportError:
+            pytest.skip("Settings not available")
+
+    def test_secret_keys_exist(self):
+        """Verify secret and encryption keys are configured"""
+        try:
+            from src.core.config import settings
+
+            assert hasattr(settings, "secret_key")
+            assert settings.secret_key is not None
+
+            assert hasattr(settings, "encryption_key")
+            assert settings.encryption_key is not None
+
+        except ImportError:
+            pytest.skip("Settings not available")
 
 
 class TestDatabaseConfiguration:
@@ -159,14 +176,36 @@ class TestPaymentConfiguration:
         try:
             from src.core.config import settings
 
-            if hasattr(settings, "PAKASIR_API_KEY"):
-                assert settings.PAKASIR_API_KEY is not None
-                assert isinstance(settings.PAKASIR_API_KEY, str)
+            assert hasattr(settings, "pakasir_api_key")
+            assert settings.pakasir_api_key is not None
+            assert isinstance(settings.pakasir_api_key, str)
 
-            if hasattr(settings, "PAKASIR_BASE_URL"):
-                assert settings.PAKASIR_BASE_URL is not None
-                assert isinstance(settings.PAKASIR_BASE_URL, str)
-                assert settings.PAKASIR_BASE_URL.startswith("http")
+            assert hasattr(settings, "pakasir_project_slug")
+            assert settings.pakasir_project_slug is not None
+            assert isinstance(settings.pakasir_project_slug, str)
+
+            assert hasattr(settings, "pakasir_base_url")
+            assert settings.pakasir_base_url is not None
+            assert isinstance(settings.pakasir_base_url, str)
+            assert settings.pakasir_base_url.startswith("http")
+
+        except ImportError:
+            pytest.skip("Settings not available")
+
+    def test_payment_fee_calculation(self):
+        """Test payment fee calculation method"""
+        try:
+            from src.core.config import settings
+
+            # Test fee calculation for 100000 IDR
+            fee = settings.calculate_payment_fee(100000)
+            # 100000 * 0.007 + 310 = 700 + 310 = 1010
+            assert fee == 1010
+
+            # Test fee calculation for 0 IDR
+            fee = settings.calculate_payment_fee(0)
+            # 0 * 0.007 + 310 = 310
+            assert fee == 310
 
         except ImportError:
             pytest.skip("Settings not available")
@@ -176,15 +215,20 @@ class TestConfigValidation:
     """Test configuration validation logic"""
 
     def test_no_missing_critical_settings(self):
-        """Ensure no critical settings are None in production mode"""
+        """Ensure no critical settings are None in any environment"""
         try:
             from src.core.config import settings
 
             # These should never be None/empty in any environment
             critical_settings = [
-                "DATABASE_URL",
-                "AUDIT_DATABASE_URL",
-                "REDIS_URL",
+                "database_url",
+                "audit_database_url",
+                "telegram_bot_token",
+                "admin_user_ids",
+                "pakasir_api_key",
+                "pakasir_project_slug",
+                "secret_key",
+                "encryption_key",
             ]
 
             for setting_name in critical_settings:
@@ -200,42 +244,34 @@ class TestConfigValidation:
         try:
             from src.core.config import settings
 
-            # Check payment expiry minutes if exists
-            if hasattr(settings, "PAYMENT_EXPIRY_MINUTES"):
-                assert isinstance(settings.PAYMENT_EXPIRY_MINUTES, int)
-                assert settings.PAYMENT_EXPIRY_MINUTES > 0
-                assert settings.PAYMENT_EXPIRY_MINUTES <= 60  # Reasonable max
+            # Check payment expiry minutes
+            assert isinstance(settings.payment_expiry_minutes, int)
+            assert settings.payment_expiry_minutes > 0
+            assert settings.payment_expiry_minutes <= 60  # Reasonable max
 
-            # Check pool sizes if configured
-            if hasattr(settings, "DATABASE_POOL_SIZE"):
-                assert isinstance(settings.DATABASE_POOL_SIZE, int)
-                assert settings.DATABASE_POOL_SIZE > 0
+            # Check pool sizes
+            assert isinstance(settings.db_pool_size, int)
+            assert settings.db_pool_size > 0
+
+            assert isinstance(settings.db_max_overflow, int)
+            assert settings.db_max_overflow > 0
 
         except ImportError:
             pytest.skip("Settings not available")
 
 
-class TestConfigurationConstants:
-    """Test application constants and enums"""
+class TestEnvironmentProperties:
+    """Test environment detection properties"""
 
-    def test_user_status_enum_exists(self):
-        """Verify user status constants are defined"""
+    def test_environment_properties_exist(self):
+        """Verify environment detection properties exist"""
         try:
-            from src.models.user import User
+            from src.core.config import settings
 
-            # Model should be importable
-            assert User is not None
+            assert hasattr(settings, "is_production")
+            assert hasattr(settings, "is_development")
+            assert isinstance(settings.is_production, bool)
+            assert isinstance(settings.is_development, bool)
 
         except ImportError:
-            pytest.skip("User model not available")
-
-    def test_order_status_enum_exists(self):
-        """Verify order status constants are defined"""
-        try:
-            from src.models.order import Order
-
-            # Model should be importable
-            assert Order is not None
-
-        except ImportError:
-            pytest.skip("Order model not available")
+            pytest.skip("Settings not available")
