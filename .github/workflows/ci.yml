@@ -96,26 +96,37 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up environment
+        run: |
+          cp .env.ci .env
+          export PYTHONPATH=${{ github.workspace }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Create audit database
+        env:
+          PGPASSWORD: quickcart123
+        run: |
+          psql -h localhost -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;"
+
       - name: Run migrations
         env:
-          DATABASE_URL: postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart
-          AUDIT_DATABASE_URL: postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          # Create audit database
-          PGPASSWORD=quickcart123 psql -h localhost -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;"
-          # Run migrations
           alembic upgrade head
 
       - name: Verify database schema
         env:
           PGPASSWORD: quickcart123
         run: |
+          echo "Main database tables:"
           psql -h localhost -U quickcart -d quickcart -c "\dt"
+          echo ""
+          echo "Audit database tables:"
+          psql -h localhost -U quickcart -d quickcart_audit -c "\dt"
 
   integration:
     name: Integration Test
@@ -127,14 +138,7 @@ jobs:
 
       - name: Create test environment
         run: |
-          cp .env.example.template .env
-          # Set test values
-          sed -i 's/your_token_here/123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11/' .env
-          sed -i 's/123456789/123456789/' .env
-          sed -i 's/your_api_key_here/test_api_key/' .env
-          sed -i 's/your_project_slug/test-project/' .env
-          sed -i 's/generate_a_random_secret_key_here/test_secret_key_32_characters_long/' .env
-          sed -i 's/generate_another_random_key_here/test_encryption_key_32_chars_long/' .env
+          cp .env.ci .env
 
       - name: Start services
         run: |

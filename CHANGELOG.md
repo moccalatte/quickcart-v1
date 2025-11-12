@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Critical:** Fixed httpx version conflict with python-telegram-bot 22.5
   - Updated httpx from 0.25.2 to 0.27.2 (required by python-telegram-bot)
   - python-telegram-bot 22.5 requires httpx>=0.27,<0.29
+- **Critical:** Fixed Alembic migration ModuleNotFoundError in CI/CD
+  - Added project root to sys.path in migrations/env.py
+  - Set PYTHONPATH in GitHub Actions workflow
+  - Created .env.ci for consistent CI testing
 - **CI/CD:** Updated GitHub Actions CodeQL from v2 to v3 (v2 deprecated)
 - **CI/CD:** Added proper permissions for security scanning workflow
 - **CI/CD:** Made import test CI-friendly with continue-on-error for external deps
+- **CI/CD:** Improved database migration workflow in GitHub Actions
 - Updated all dependencies to latest compatible versions:
   - fastapi: 0.104.1 → 0.109.0
   - uvicorn: 0.24.0 → 0.27.0
@@ -24,9 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pillow: 10.1.0 → 10.2.0
 
 ### Added
-- DEPENDENCIES.md - Comprehensive dependency compatibility guide
-- Detailed dependency conflict troubleshooting documentation
+- DEPENDENCIES.md - Comprehensive dependency compatibility guide (348 lines)
+- GITHUB_ACTIONS_FIX.md - Complete CI/CD fix documentation (371 lines)
+- MIGRATION_FIX.md - Database migration troubleshooting guide (428 lines)
+- .env.ci - Test environment variables for CI/CD
 - CI/CD environment detection in test_imports.py
+- Detailed dependency conflict troubleshooting documentation
 
 ## [1.0.0] - 2025-01-12
 

@@ -43,6 +43,9 @@ env/
 .env.*.local
 *.env
 
+# Exception: Allow .env.ci for GitHub Actions
+!.env.ci
+
 # Database
 *.db
 *.sqlite

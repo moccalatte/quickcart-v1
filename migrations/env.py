@@ -5,11 +5,17 @@ Reference: docs/06-data_schema.md, docs/10-audit_architecture.md
 """
 
 import asyncio
+import sys
 from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
 from sqlalchemy import create_engine, pool
 from sqlalchemy.ext.asyncio import create_async_engine
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from src.core.config import settings
 from src.core.database import Base
