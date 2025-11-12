@@ -41,7 +41,7 @@ class TestModelDefinitions:
         models = [
             (User, "users"),
             (Product, "products"),
-            (ProductStock, "product_stock"),
+            (ProductStock, "product_stocks"),
             (Order, "orders"),
             (OrderItem, "order_items"),
             (Voucher, "vouchers"),
@@ -181,10 +181,10 @@ class TestUserModel:
 
         required_fields = [
             "id",
-            "telegram_id",
+            "name",
             "username",
-            "balance",
-            "status",
+            "member_status",
+            "account_balance",
             "created_at",
         ]
 
@@ -200,7 +200,7 @@ class TestProductModel:
         mapper = inspect(Product)
         column_names = [col.name for col in mapper.columns]
 
-        required_fields = ["id", "name", "price", "category", "created_at"]
+        required_fields = ["id", "name", "customer_price", "category", "created_at"]
 
         for field in required_fields:
             assert field in column_names, f"Product missing required field '{field}'"
@@ -217,7 +217,8 @@ class TestOrderModel:
         required_fields = [
             "invoice_id",
             "user_id",
-            "total_amount",
+            "subtotal",
+            "total_bill",
             "status",
             "created_at",
         ]
@@ -230,7 +231,7 @@ class TestOrderModel:
         mapper = inspect(OrderItem)
         column_names = [col.name for col in mapper.columns]
 
-        required_fields = ["id", "order_id", "product_id", "quantity", "price"]
+        required_fields = ["id", "order_id", "product_id", "stock_id", "price_per_unit"]
 
         for field in required_fields:
             assert field in column_names, f"OrderItem missing required field '{field}'"
