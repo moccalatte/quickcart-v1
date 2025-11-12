@@ -51,7 +51,7 @@ jobs:
       - name: Check for common issues
         run: |
           echo "Checking for reserved SQLAlchemy attributes..."
-          if grep -rE "\bmetadata\s*=\s*Column" src/models/ 2>/dev/null; then
+          if grep -rE "metadata\s*=\s*Column" src/models/ 2>/dev/null; then
             echo "❌ Found reserved 'metadata' column name in models!"
             exit 1
           fi
@@ -81,7 +81,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: take@imnotokay.my.id
+          password: basecamp213
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -120,6 +124,11 @@ jobs:
           - 5432:5432
 
     steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: take@imnotokay.my.id
+          password: basecamp213
       - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
@@ -215,6 +224,11 @@ jobs:
     needs: database
 
     steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: take@imnotokay.my.id
+          password: basecamp213
       - uses: actions/checkout@v4
 
       - name: Create test environment

@@ -50,11 +50,11 @@ class Settings(BaseSettings):
     # For separate VPS (production): use your VPS IP/hostname
     # Example: postgresql+asyncpg://user:pass@your-db-server.com:5432/dbname
     database_url: str = Field(
-        default="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart",
+        ...,
         description="Main database URL - change 'localhost' to your PostgreSQL server IP/hostname",
     )
     audit_database_url: str = Field(
-        default="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit",
+        ...,
         description="Audit database URL - can be same or different PostgreSQL server",
     )
 

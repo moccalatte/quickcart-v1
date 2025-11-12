@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize bot application
     bot_app = create_bot_application()
-    await bot_app.initialize()
+    # await bot_app.initialize()
     logger.info("✓ Bot initialized")
 
     logger.info("✅ QuickCart is ready!")

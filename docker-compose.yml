@@ -41,21 +41,22 @@ services:
   # Uncomment this block if you want to use Redis for session storage
   # If not enabled, the bot will use in-memory storage (works fine for most cases)
   # redis:
-  #   image: redis:7-alpine
-  #   container_name: quickcart_redis
-  #   restart: unless-stopped
-  #   command: redis-server --requirepass redis123
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - redis_data:/data
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 5
-  #   networks:
-  #     - quickcart_network
+  redis:
+    image: redis:7-alpine
+    container_name: quickcart_redis
+    restart: unless-stopped
+    command: redis-server --requirepass redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - quickcart_network
 
   # QuickCart Bot Application
   app:
@@ -67,14 +68,14 @@ services:
     env_file:
       - .env
     volumes:
-      - ./src:/app/src
+      # - ./src:/app/src
       - ./migrations:/app/migrations
     depends_on:
       db:
         condition: service_healthy
       # Uncomment if you enabled Redis above:
-      # redis:
-      #   condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - quickcart_network
     command: >
@@ -91,8 +92,8 @@ volumes:
   postgres_data:
     name: quickcart_postgres_data
   # Uncomment if you enabled Redis:
-  # redis_data:
-  #   name: quickcart_redis_data
+  redis_data:
+    name: quickcart_redis_data
 
 networks:
   quickcart_network:
