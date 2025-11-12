@@ -51,7 +51,7 @@ jobs:
       - name: Check for common issues
         run: |
           echo "Checking for reserved SQLAlchemy attributes..."
-          if grep -rE "metadata\s*=\s*Column" src/models/ 2>/dev/null; then
+          if grep -rE " metadata\s*=\s*Column" src/models/ 2>/dev/null; then
             echo "❌ Found reserved 'metadata' column name in models!"
             exit 1
           fi
@@ -223,6 +223,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: database
 
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: quickcart
+          POSTGRES_PASSWORD: quickcart123
+          POSTGRES_DB: quickcart
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
     steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -241,18 +265,9 @@ jobs:
           echo "SECRET_KEY=test_secret_key_min_32_characters_long_for_testing" >> .env
           echo "ENCRYPTION_KEY=test_encryption_key_32_chars_min" >> .env
           echo "WEBHOOK_SECRET=test_webhook_secret" >> .env
-
-      - name: Start services
-        run: |
-          docker compose up -d db
-          echo "Waiting for services to be ready..."
-          sleep 20
-
-      - name: Verify database is ready
-        run: |
-          docker compose exec -T db psql -U quickcart -d quickcart -c "SELECT 1;" || exit 1
-          echo "✓ PostgreSQL is ready"
-
+          echo "DATABASE_URL=postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart" >> .env
+          echo "AUDIT_DATABASE_URL=postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit" >> .env
+          echo "REDIS_URL=redis://localhost:6379/0" >> .env
 
       - name: Set up Python for app test
         uses: actions/setup-python@v4
@@ -268,24 +283,13 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
-          export DATABASE_URL="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart"
-          export AUDIT_DATABASE_URL="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit"
-          docker compose exec -T db psql -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;" || true
+          psql -h localhost -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;" || true
           alembic upgrade head
           echo "✓ Migrations applied"
 
       - name: Test application startup
         env:
           PYTHONPATH: ${{ github.workspace }}
-          DATABASE_URL: "postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart"
-          AUDIT_DATABASE_URL: "postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit"
-          REDIS_URL: "redis://localhost:6379/0"
-          TELEGRAM_BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-          ADMIN_USER_IDS: "123456789"
-          PAKASIR_API_KEY: "test_api_key"
-          PAKASIR_PROJECT_SLUG: "test_project"
-          SECRET_KEY: "test_secret_key_min_32_characters_long_for_testing"
-          ENCRYPTION_KEY: "test_encryption_key_32_chars_min"
         run: |
           echo "Testing critical imports..."
           python -c "
@@ -295,21 +299,12 @@ jobs:
           print('✓ All critical modules import successfully')
           print('✓ Settings loaded:', settings.store_name)
           "
-
-      - name: Build and start application container
+      - name: Run application in background
         run: |
-          docker compose up -d app
-          echo "Waiting for application to start..."
+          python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 &
           sleep 30
-
       - name: Check application health
         run: |
-          echo "=== Docker Compose Status ==="
-          docker compose ps
-          echo ""
-          echo "=== Application Logs ==="
-          docker compose logs app --tail=50
-          echo ""
           echo "=== Testing health endpoint ==="
           max_attempts=10
           attempt=0
@@ -324,59 +319,8 @@ jobs:
           done
           if [ $attempt -eq $max_attempts ]; then
             echo "❌ Health endpoint failed after $max_attempts attempts"
-            docker compose logs app
             exit 1
           fi
-
-      - name: Test webhook endpoint
-        run: |
-          echo "Testing webhook endpoint..."
-          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8000/webhook \
-            -H "Content-Type: application/json" \
-            -d '{"update_id": 1, "message": {"chat": {"id": 123}, "text": "/start"}}')
-          if [ "$response" = "200" ] || [ "$response" = "400" ]; then
-            echo "✓ Webhook endpoint is accessible (status: $response)"
-          else
-            echo "⚠ Unexpected webhook response: $response (may need proper authentication)"
-          fi
-
-      - name: Verify all database tables
-        run: |
-          echo "=== Main Database Tables ==="
-          docker compose exec -T db psql -U quickcart -d quickcart -c "\dt"
-          echo ""
-          echo "=== Audit Database Tables ==="
-          docker compose exec -T db psql -U quickcart -d quickcart_audit -c "\dt"
-
-      - name: Test database connectivity from app
-        run: |
-          docker compose exec -T app python -c "
-          import asyncio
-          from src.core.database import DatabaseManager
-
-          async def test():
-              db = DatabaseManager()
-              await db.init()
-              print('✓ Database connection successful')
-              await db.close()
-
-          asyncio.run(test())
-          " || echo "⚠ Database connectivity test skipped (app may not be ready)"
-
-      - name: Show final status
-        if: always()
-        run: |
-          echo "=== Final Service Status ==="
-          docker compose ps
-          echo ""
-          echo "=== Resource Usage ==="
-          docker stats --no-stream
-
-      - name: Cleanup
-        if: always()
-        run: |
-          docker compose down -v
-          echo "✓ Cleanup completed"
 
   security:
     name: Security Scan

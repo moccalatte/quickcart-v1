@@ -1,63 +1,16 @@
 # QuickCart Docker Compose Configuration
 # ==========================================
-# This ONE file works for ALL scenarios - just edit .env!
+# This file is designed for deployments using external PostgreSQL and Redis.
+# For local development with all-in-one containers, please see the documentation.
 #
 # SETUP (3 steps):
 #   1. cp .env.template .env
-#   2. Edit .env with your bot token and credentials
-#   3. docker compose up -d
+#   2. Edit .env with your bot token and ALL external service URLs (PostgreSQL, Redis)
+#   3. docker compose up -d --build
 #
-# That's it! No need to choose different files or configurations.
-# The .env file controls everything automatically.
-#
-# For complete beginner guide, see: README.md
+# See README.md and .env.template for more details.
 
 services:
-  # PostgreSQL Database
-  # Uses local containers by default
-  # For external database: just change DATABASE_URL in .env to your external server
-  db:
-    image: postgres:15-alpine
-    container_name: quickcart_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: quickcart
-      POSTGRES_PASSWORD: quickcart123
-      POSTGRES_DB: quickcart
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U quickcart"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - quickcart_network
-
-  # Redis Cache (OPTIONAL)
-  # Uncomment this block if you want to use Redis for session storage
-  # If not enabled, the bot will use in-memory storage (works fine for most cases)
-  # redis:
-  redis:
-    image: redis:7-alpine
-    container_name: quickcart_redis
-    restart: unless-stopped
-    command: redis-server --requirepass redis123
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - quickcart_network
-
   # QuickCart Bot Application
   app:
     build: .
@@ -67,72 +20,34 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    # The `src` directory is not mounted to ensure the container is immutable.
+    # Migrations are mounted to allow running `alembic` commands easily if needed.
     volumes:
-      # - ./src:/app/src
       - ./migrations:/app/migrations
-    depends_on:
-      db:
-        condition: service_healthy
-      # Uncomment if you enabled Redis above:
-      redis:
-        condition: service_healthy
-    networks:
-      - quickcart_network
     command: >
       sh -c "
-        echo '🔄 Waiting for database...' &&
+        echo '🔄 Waiting for database to be available...' &&
         sleep 5 &&
         echo '🔄 Running database migrations...' &&
         alembic upgrade head &&
         echo '✅ Starting QuickCart Bot...' &&
-        python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+        python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
       "
 
-volumes:
-  postgres_data:
-    name: quickcart_postgres_data
-  # Uncomment if you enabled Redis:
-  redis_data:
-    name: quickcart_redis_data
-
-networks:
-  quickcart_network:
-    name: quickcart_network
-    driver: bridge
 # ==========================================
 # USAGE EXAMPLES
 # ==========================================
 #
-# Start everything:
+# Start the application:
 #   docker compose up -d
 #
 # View logs:
 #   docker compose logs -f app
 #
-# Stop everything:
+# Stop the application:
 #   docker compose down
 #
-# Restart bot only:
-#   docker compose restart app
-#
-# Run migrations:
+# Run migrations manually:
 #   docker compose exec app alembic upgrade head
-#
-# Access database:
-#   docker compose exec db psql -U quickcart
-#
-# ==========================================
-# USING EXTERNAL DATABASE (Advanced)
-# ==========================================
-#
-# Want to use PostgreSQL on a different server?
-# Just change DATABASE_URL in .env to point to your external server:
-#
-#   DATABASE_URL=postgresql+asyncpg://user:pass@192.168.1.100:5432/quickcart
-#
-# The local 'db' container will still run but won't be used.
-# You can stop it with: docker compose stop db
-#
-# Same for Redis - just change REDIS_URL in .env to your external Redis server.
 #
 # ==========================================
