@@ -69,7 +69,6 @@ services:
     volumes:
       - ./src:/app/src
       - ./migrations:/app/migrations
-      - ./tests:/app/tests
     depends_on:
       db:
         condition: service_healthy
