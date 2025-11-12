@@ -196,7 +196,7 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     echo "🚀 Starting QuickCart..."
     echo ""
 
-    docker-compose up -d
+    sudo docker compose up -d
 
     echo ""
     print_success "QuickCart is starting!"
