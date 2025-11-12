@@ -296,7 +296,7 @@ jobs:
           python -c "
           from src.core.config import settings
           from src.core.database import DatabaseManager
-          from src.bot.application import create_application
+          from src.bot.application import create_bot_application
           print('✓ All critical modules import successfully')
           print('✓ Settings loaded:', settings.store_name)
           "
