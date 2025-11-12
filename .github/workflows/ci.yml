@@ -282,6 +282,7 @@ jobs:
       - name: Run database migrations
         env:
           PYTHONPATH: ${{ github.workspace }}
+          PGPASSWORD: quickcart123
         run: |
           psql -h localhost -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;" || true
           alembic upgrade head
