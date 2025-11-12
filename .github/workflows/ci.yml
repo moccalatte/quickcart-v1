@@ -63,8 +63,12 @@ jobs:
           DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
           AUDIT_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test_audit"
           REDIS_URL: "redis://localhost:6379/0"
-          BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+          TELEGRAM_BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+          ADMIN_USER_IDS: "123456789"
           PAKASIR_API_KEY: "test_api_key"
+          PAKASIR_PROJECT_SLUG: "test_project"
+          SECRET_KEY: "test_secret_key_min_32_characters_long_for_testing"
+          ENCRYPTION_KEY: "test_encryption_key_32_chars_min"
         run: |
           echo "Running unit tests..."
           pytest tests/unit/ -v --tb=short --maxfail=5
@@ -216,8 +220,12 @@ jobs:
       - name: Create test environment
         run: |
           cp .env.ci .env
-          echo "BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz" >> .env
+          echo "TELEGRAM_BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz" >> .env
+          echo "ADMIN_USER_IDS=123456789" >> .env
           echo "PAKASIR_API_KEY=test_api_key_123" >> .env
+          echo "PAKASIR_PROJECT_SLUG=test_project" >> .env
+          echo "SECRET_KEY=test_secret_key_min_32_characters_long_for_testing" >> .env
+          echo "ENCRYPTION_KEY=test_encryption_key_32_chars_min" >> .env
           echo "WEBHOOK_SECRET=test_webhook_secret" >> .env
 
       - name: Start services
@@ -262,8 +270,12 @@ jobs:
           DATABASE_URL: "postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart"
           AUDIT_DATABASE_URL: "postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit"
           REDIS_URL: "redis://localhost:6379/0"
-          BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+          TELEGRAM_BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+          ADMIN_USER_IDS: "123456789"
           PAKASIR_API_KEY: "test_api_key"
+          PAKASIR_PROJECT_SLUG: "test_project"
+          SECRET_KEY: "test_secret_key_min_32_characters_long_for_testing"
+          ENCRYPTION_KEY: "test_encryption_key_32_chars_min"
         run: |
           echo "Testing critical imports..."
           python -c "
@@ -271,7 +283,7 @@ jobs:
           from src.core.database import DatabaseManager
           from src.bot.application import create_application
           print('✓ All critical modules import successfully')
-          print('✓ Settings loaded:', settings.app_name)
+          print('✓ Settings loaded:', settings.store_name)
           "
 
       - name: Build and start application container

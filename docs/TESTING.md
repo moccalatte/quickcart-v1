@@ -55,8 +55,12 @@ Make sure you have the required environment variables set (or create `.env.test`
 DATABASE_URL=postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_test
 AUDIT_DATABASE_URL=postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit_test
 REDIS_URL=redis://localhost:6379/1
-BOT_TOKEN=test_token_12345
+TELEGRAM_BOT_TOKEN=test_token_12345
+ADMIN_USER_IDS=123456789
 PAKASIR_API_KEY=test_api_key
+PAKASIR_PROJECT_SLUG=test_project
+SECRET_KEY=test_secret_key_min_32_characters_long
+ENCRYPTION_KEY=test_encryption_key_32_chars_min
 ```
 
 ### Run All Tests
