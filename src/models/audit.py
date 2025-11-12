@@ -4,8 +4,10 @@ Reference: docs/10-audit_architecture.md, docs/06-data_schema.md
 """
 
 from datetime import datetime
-from sqlalchemy import Column, BigInteger, String, Text, DateTime
-from sqlalchemy.dialects.postgresql import JSONB, INET
+
+from sqlalchemy import BigInteger, Column, DateTime, String, Text
+from sqlalchemy.dialects.postgresql import INET, JSONB
+
 from src.core.database import Base
 
 
@@ -30,7 +32,9 @@ class AuditLog(Base):
     ip_address = Column(INET, nullable=True)
 
     def __repr__(self):
-        return f"<AuditLog(id={self.id}, action={self.action}, entity={self.entity_type})>"
+        return (
+            f"<AuditLog(id={self.id}, action={self.action}, entity={self.entity_type})>"
+        )
 
 
 class PaymentAuditLog(Base):
@@ -46,7 +50,7 @@ class PaymentAuditLog(Base):
     payment_method = Column(String(20), nullable=False)
     status = Column(String(20), nullable=False)
     gateway_response = Column(JSONB, nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    payment_metadata = Column(JSONB, nullable=True)
 
     def __repr__(self):
         return f"<PaymentAuditLog(order={self.order_id}, status={self.status})>"

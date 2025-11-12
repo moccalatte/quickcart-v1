@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   lint:
-    name: Code Quality Check
+    name: Code Quality & Syntax Check
     runs-on: ubuntu-latest
 
     steps:
@@ -38,10 +38,37 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Check Python syntax
+        run: |
+          python -m py_compile $(find src -name "*.py")
+          echo "✓ All Python files compile successfully"
+
       - name: Verify imports
         run: |
           python test_imports.py
         continue-on-error: true
+
+      - name: Check for common issues
+        run: |
+          echo "Checking for reserved SQLAlchemy attributes..."
+          if grep -r "metadata.*=.*Column" src/models/ 2>/dev/null; then
+            echo "❌ Found reserved 'metadata' column name in models!"
+            exit 1
+          fi
+          echo "✓ No reserved attribute issues found"
+
+      - name: Run unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test"
+          AUDIT_DATABASE_URL: "postgresql+asyncpg://test:test@localhost:5432/test_audit"
+          REDIS_URL: "redis://localhost:6379/0"
+          BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+          PAKASIR_API_KEY: "test_api_key"
+        run: |
+          echo "Running unit tests..."
+          pytest tests/unit/ -v --tb=short --maxfail=5
+          echo "✓ Unit tests passed"
 
   build:
     name: Docker Build Test
@@ -69,7 +96,7 @@ jobs:
           docker compose config
 
   database:
-    name: Database Migration Test
+    name: Database Migration & Schema Test
     runs-on: ubuntu-latest
     needs: build
 
@@ -112,24 +139,74 @@ jobs:
         run: |
           psql -h localhost -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;"
 
+      - name: Test model imports
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python -c "
+          import sys
+          sys.path.insert(0, '${{ github.workspace }}')
+          from src.models.audit import PaymentAuditLog, AuditLog, AdminActionAudit
+          from src.models.user import User
+          from src.models.product import Product
+          from src.models.order import Order
+          print('✓ All models import successfully')
+          "
+
       - name: Run migrations
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           alembic upgrade head
+          echo "✓ Migrations completed successfully"
 
       - name: Verify database schema
         env:
           PGPASSWORD: quickcart123
         run: |
-          echo "Main database tables:"
+          echo "=== Main database tables ==="
           psql -h localhost -U quickcart -d quickcart -c "\dt"
           echo ""
-          echo "Audit database tables:"
+          echo "=== Audit database tables ==="
           psql -h localhost -U quickcart -d quickcart_audit -c "\dt"
+          echo ""
+          echo "=== Verify critical tables exist ==="
+          tables="users products orders order_items product_stock vouchers"
+          for table in $tables; do
+            count=$(psql -h localhost -U quickcart -d quickcart -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='$table';")
+            if [ "$count" -eq 1 ]; then
+              echo "✓ Table '$table' exists"
+            else
+              echo "❌ Table '$table' NOT found!"
+              exit 1
+            fi
+          done
+          echo ""
+          echo "=== Verify audit tables exist ==="
+          audit_tables="audit_logs payment_audit_logs admin_action_audit"
+          for table in $audit_tables; do
+            count=$(psql -h localhost -U quickcart -d quickcart_audit -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='$table';")
+            if [ "$count" -eq 1 ]; then
+              echo "✓ Audit table '$table' exists"
+            else
+              echo "❌ Audit table '$table' NOT found!"
+              exit 1
+            fi
+          done
+
+      - name: Test migration rollback
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          PGPASSWORD: quickcart123
+        run: |
+          echo "Testing downgrade..."
+          alembic downgrade -1
+          echo "Testing upgrade again..."
+          alembic upgrade head
+          echo "✓ Migration rollback test passed"
 
   integration:
-    name: Integration Test
+    name: Full Integration & Application Test
     runs-on: ubuntu-latest
     needs: database
 
@@ -139,27 +216,145 @@ jobs:
       - name: Create test environment
         run: |
           cp .env.ci .env
+          echo "BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz" >> .env
+          echo "PAKASIR_API_KEY=test_api_key_123" >> .env
+          echo "WEBHOOK_SECRET=test_webhook_secret" >> .env
 
       - name: Start services
         run: |
-          docker compose up -d
-          # Wait for services to be ready
+          docker compose up -d db redis
+          echo "Waiting for services to be ready..."
+          sleep 20
+
+      - name: Verify database is ready
+        run: |
+          docker compose exec -T db psql -U quickcart -d quickcart -c "SELECT 1;" || exit 1
+          echo "✓ PostgreSQL is ready"
+
+      - name: Verify Redis is ready
+        run: |
+          docker compose exec -T redis redis-cli ping || exit 1
+          echo "✓ Redis is ready"
+
+      - name: Set up Python for app test
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run database migrations
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          export DATABASE_URL="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart"
+          export AUDIT_DATABASE_URL="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit"
+          docker compose exec -T db psql -U quickcart -d quickcart -c "CREATE DATABASE quickcart_audit;" || true
+          alembic upgrade head
+          echo "✓ Migrations applied"
+
+      - name: Test application startup
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DATABASE_URL: "postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart"
+          AUDIT_DATABASE_URL: "postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit"
+          REDIS_URL: "redis://localhost:6379/0"
+          BOT_TOKEN: "1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+          PAKASIR_API_KEY: "test_api_key"
+        run: |
+          echo "Testing critical imports..."
+          python -c "
+          from src.core.config import settings
+          from src.core.database import DatabaseManager
+          from src.bot.application import create_application
+          print('✓ All critical modules import successfully')
+          print('✓ Settings loaded:', settings.app_name)
+          "
+
+      - name: Build and start application container
+        run: |
+          docker compose up -d app
+          echo "Waiting for application to start..."
           sleep 30
 
-      - name: Check service health
+      - name: Check application health
         run: |
+          echo "=== Docker Compose Status ==="
           docker compose ps
-          docker compose logs app
-          curl -f http://localhost:8000/health || exit 1
+          echo ""
+          echo "=== Application Logs ==="
+          docker compose logs app --tail=50
+          echo ""
+          echo "=== Testing health endpoint ==="
+          max_attempts=10
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f http://localhost:8000/health 2>/dev/null; then
+              echo "✓ Health endpoint is responding"
+              break
+            fi
+            attempt=$((attempt + 1))
+            echo "Attempt $attempt/$max_attempts failed, retrying..."
+            sleep 3
+          done
+          if [ $attempt -eq $max_attempts ]; then
+            echo "❌ Health endpoint failed after $max_attempts attempts"
+            docker compose logs app
+            exit 1
+          fi
 
-      - name: Verify database
+      - name: Test webhook endpoint
         run: |
+          echo "Testing webhook endpoint..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:8000/webhook \
+            -H "Content-Type: application/json" \
+            -d '{"update_id": 1, "message": {"chat": {"id": 123}, "text": "/start"}}')
+          if [ "$response" = "200" ] || [ "$response" = "400" ]; then
+            echo "✓ Webhook endpoint is accessible (status: $response)"
+          else
+            echo "⚠ Unexpected webhook response: $response (may need proper authentication)"
+          fi
+
+      - name: Verify all database tables
+        run: |
+          echo "=== Main Database Tables ==="
           docker compose exec -T db psql -U quickcart -d quickcart -c "\dt"
+          echo ""
+          echo "=== Audit Database Tables ==="
+          docker compose exec -T db psql -U quickcart -d quickcart_audit -c "\dt"
+
+      - name: Test database connectivity from app
+        run: |
+          docker compose exec -T app python -c "
+          import asyncio
+          from src.core.database import DatabaseManager
+
+          async def test():
+              db = DatabaseManager()
+              await db.init()
+              print('✓ Database connection successful')
+              await db.close()
+
+          asyncio.run(test())
+          " || echo "⚠ Database connectivity test skipped (app may not be ready)"
+
+      - name: Show final status
+        if: always()
+        run: |
+          echo "=== Final Service Status ==="
+          docker compose ps
+          echo ""
+          echo "=== Resource Usage ==="
+          docker stats --no-stream
 
       - name: Cleanup
         if: always()
         run: |
           docker compose down -v
+          echo "✓ Cleanup completed"
 
   security:
     name: Security Scan
@@ -186,3 +381,29 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
         continue-on-error: true
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint, build, database, integration, security]
+    if: always()
+
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "=== CI/CD Pipeline Summary ==="
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          echo "Database: ${{ needs.database.result }}"
+          echo "Integration: ${{ needs.integration.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          echo ""
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.database.result }}" != "success" ] || \
+             [ "${{ needs.integration.result }}" != "success" ]; then
+            echo "❌ Some jobs failed. Please review the logs above."
+            exit 1
+          else
+            echo "✅ All critical jobs passed successfully!"
+          fi

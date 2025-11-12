@@ -138,7 +138,7 @@ def upgrade() -> None:
             comment="Payment gateway response",
         ),
         sa.Column(
-            "metadata",
+            "payment_metadata",
             postgresql.JSONB(astext_type=sa.Text()),
             nullable=True,
             comment="Additional payment metadata",
