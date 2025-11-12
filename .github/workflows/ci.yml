@@ -51,7 +51,7 @@ jobs:
       - name: Check for common issues
         run: |
           echo "Checking for reserved SQLAlchemy attributes..."
-          if grep -r "metadata.*=.*Column" src/models/ 2>/dev/null; then
+          if grep -rE "\bmetadata\s*=\s*Column" src/models/ 2>/dev/null; then
             echo "❌ Found reserved 'metadata' column name in models!"
             exit 1
           fi

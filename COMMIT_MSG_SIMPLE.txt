@@ -1,0 +1,25 @@
+Fix SQLAlchemy reserved attribute and enhance CI/CD with comprehensive testing
+
+Fixed critical GitHub Actions failure caused by SQLAlchemy reserved attribute 'metadata'
+in PaymentAuditLog model. Renamed to 'payment_metadata' in both model and migration.
+
+Key Changes:
+- Fixed: Renamed metadata → payment_metadata in src/models/audit.py
+- Fixed: Updated migrations/versions/002_audit_schema.py to match
+- Fixed: CI grep pattern now uses word boundaries (\bmetadata\s*=\s*Column)
+- Added: 40+ unit tests (test_models.py, test_config.py)
+- Enhanced: CI pipeline with app startup, health checks, migration rollback tests
+- Added: Comprehensive testing documentation (docs/TESTING.md)
+- Added: pytest dependencies to requirements.txt
+
+Impact:
+✅ CI pipeline fully functional
+✅ Automated unit tests prevent regressions
+✅ Application startup verification
+✅ Migration validation and rollback testing
+✅ Health endpoint monitoring
+
+Files Changed: 8 files (2 core, 1 CI, 1 deps, 2 tests, 2 docs)
+
+Type: bugfix, enhancement
+Status: verified and ready for deployment
