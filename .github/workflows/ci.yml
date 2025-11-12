@@ -175,7 +175,7 @@ jobs:
           psql -h localhost -U quickcart -d quickcart_audit -c "\dt"
           echo ""
           echo "=== Verify critical tables exist ==="
-          tables="users products orders order_items product_stock vouchers"
+          tables="users products orders order_items product_stocks vouchers"
           for table in $tables; do
             count=$(psql -h localhost -U quickcart -d quickcart -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='$table';")
             if [ "$count" -eq 1 ]; then
