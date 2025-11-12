@@ -1,0 +1,61 @@
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyc
+.Python
+*.egg-info/
+
+# Virtual Environment
+venv/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Documentation (not needed in container)
+*.md
+docs/
+
+# CI/CD
+.github/
+
+# Environment files (use docker-compose env)
+.env.example.template
+.env.local
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.sql
+
+# OS files
+Thumbs.db
+
+# Temporary
+tmp/
+*.tmp
+
+# Scripts (not needed in runtime)
+scripts/
+setup.sh
+
+# Development only
+Makefile
+raw1.md
+raw2.md

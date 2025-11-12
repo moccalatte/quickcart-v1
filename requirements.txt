@@ -1,0 +1,46 @@
+# QuickCart Production Dependencies
+# Python 3.11+ required
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+alembic==1.12.1
+SQLAlchemy==2.0.23
+
+# Redis (optional - system works without it)
+redis[hiredis]==5.0.1
+
+# Telegram Bot (v22.5 - latest version)
+# Install: pip install python-telegram-bot --upgrade
+# Docs: https://github.com/python-telegram-bot/python-telegram-bot
+python-telegram-bot==22.5
+
+# HTTP Client for Pakasir API
+httpx==0.25.2
+
+# Data Validation
+pydantic==2.5.2
+pydantic-settings==2.1.0
+email-validator==2.1.0
+
+# Security & Encryption
+python-dotenv==1.0.0
+cryptography==41.0.7
+
+# Utilities
+python-dateutil==2.8.2
+qrcode[pil]==7.4.2
+Pillow==10.1.0
+
+# Retry logic for API calls
+tenacity==8.2.3
+
+# Testing (install separately with: pip install pytest pytest-asyncio)
+# pytest==7.4.3
+# pytest-asyncio==0.21.1
+# pytest-cov==4.1.0
