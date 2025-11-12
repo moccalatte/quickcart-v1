@@ -154,45 +154,94 @@ async def telegram_webhook(request: Request):
 @app.post("/webhooks/pakasir")
 async def pakasir_webhook(request: Request):
     """
-    Pakasir payment webhook endpoint
-    Reference: docs/07-api_contracts.md, docs/08-integration_plan.md
+    Pakasir payment webhook endpoint - QRIS only
+    Reference: docs/pakasir.md Section 4
 
     Expected payload from Pakasir:
     {
-        "order_id": "TRX123456",
-        "status": "paid",
-        "amount": 50000,
-        "paid_at": "2025-01-12T10:30:00Z",
-        ...
+        "amount": 22000,
+        "order_id": "tg12345-ORDER123",
+        "project": "your-project",
+        "status": "completed",
+        "payment_method": "qris",
+        "completed_at": "2025-09-10T08:07:02.819+07:00",
+        "metadata": {
+            "telegram_id": 12345,
+            "telegram_username": "user123"
+        }
     }
+
+    Status values: "completed", "pending", "expired"
     """
     try:
         data = await request.json()
 
-        # TODO: Verify webhook signature if Pakasir provides one
-        # if settings.pakasir_webhook_secret:
-        #     verify_signature(request, data)
+        # Validate webhook signature if secret is configured
+        signature = request.headers.get("X-Pakasir-Signature")
+        if settings.pakasir_webhook_secret and signature:
+            from src.integrations.pakasir import pakasir_client
+
+            if not pakasir_client.validate_webhook_signature(signature, data):
+                logger.error(
+                    f"Invalid webhook signature for order {data.get('order_id')}"
+                )
+                return JSONResponse(
+                    status_code=401,
+                    content={"status": "error", "message": "Invalid signature"},
+                )
 
         logger.info(f"Received Pakasir webhook: {data}")
 
-        # Extract payment info
+        # Extract payment info (as per pakasir.md docs)
         order_id = data.get("order_id")
         status = data.get("status")
+        amount = data.get("amount")
+        payment_method = data.get("payment_method")
+        completed_at = data.get("completed_at")
+        metadata = data.get("metadata", {})
 
-        if not order_id or not status:
+        if not order_id or not status or not amount:
             logger.error(f"Invalid webhook payload: {data}")
             return JSONResponse(
                 status_code=400,
-                content={"status": "error", "message": "Invalid payload"},
+                content={"status": "error", "message": "Missing required fields"},
             )
 
-        # TODO: Process payment completion
-        # - Update order status in database
-        # - Deliver product to user
-        # - Send notifications to user and admin
-        # - Log to audit database
+        # Validate payment method (QRIS only)
+        if payment_method and payment_method != "qris":
+            logger.warning(f"Unexpected payment method: {payment_method}")
 
-        logger.info(f"Payment webhook processed: {order_id} - {status}")
+        # Process based on status
+        if status == "completed":
+            # TODO: Process successful payment
+            # - Extract telegram_id from metadata or order_id (format: tg{id}-{suffix})
+            # - Update order status in database to 'paid'
+            # - Deliver product to user via Telegram
+            # - Send confirmation message to user
+            # - Log transaction to audit database
+            # - Notify admin if needed
+
+            logger.info(
+                f"Payment completed: order_id={order_id}, "
+                f"amount={amount}, "
+                f"telegram_id={metadata.get('telegram_id')}, "
+                f"completed_at={completed_at}"
+            )
+
+        elif status == "expired":
+            # TODO: Handle expired payment
+            # - Update order status to 'expired'
+            # - Notify user that payment window has closed
+            # - Log to audit database
+
+            logger.info(f"Payment expired: order_id={order_id}")
+
+        elif status == "pending":
+            # Payment still pending (usually not sent via webhook, but handle it)
+            logger.info(f"Payment pending: order_id={order_id}")
+
+        else:
+            logger.warning(f"Unknown payment status: {status} for order {order_id}")
 
         return {"status": "ok"}
 

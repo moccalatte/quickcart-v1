@@ -99,7 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only 6 REQUIRED environment variables
 - 30+ optional variables with sensible defaults
 - Auto-generated security keys via setup script
-- Complete .env.example.template with documentation
+- Complete .env.template with documentation for both development and production
 
 ### Infrastructure
 - Docker Compose setup (3 services)

@@ -1,27 +1,21 @@
 # QuickCart Docker Compose Configuration
+# ==========================================
+# This ONE file works for ALL scenarios - just edit .env!
 #
-# ⚠️  IMPORTANT: Before running, copy the environment template:
-#     cp .env.example.template .env
-#     Then edit .env with your actual values!
-#
-# Required environment variables (must be set in .env):
-#   - TELEGRAM_BOT_TOKEN (from @BotFather)
-#   - ADMIN_USER_IDS (your Telegram user ID from @userinfobot)
-#   - PAKASIR_API_KEY (from pakasir.com)
-#   - PAKASIR_PROJECT_SLUG (from pakasir.com)
-#   - SECRET_KEY (generate with: python -c "import secrets; print(secrets.token_urlsafe(32))")
-#   - ENCRYPTION_KEY (generate with: python -c "import secrets; print(secrets.token_urlsafe(32))")
-#
-# Quick start:
-#   1. cp .env.example.template .env
-#   2. Edit .env with your values
+# SETUP (3 steps):
+#   1. cp .env.template .env
+#   2. Edit .env with your bot token and credentials
 #   3. docker compose up -d
 #
-# See INSTALL.md for complete step-by-step guide
-# See README.md for features and documentation
+# That's it! No need to choose different files or configurations.
+# The .env file controls everything automatically.
+#
+# For complete beginner guide, see: README.md
 
 services:
   # PostgreSQL Database
+  # Uses local containers by default
+  # For external database: just change DATABASE_URL in .env to your external server
   db:
     image: postgres:15-alpine
     container_name: quickcart_db
@@ -43,8 +37,9 @@ services:
     networks:
       - quickcart_network
 
-  # Redis (OPTIONAL - comment out if you don't want to use Redis)
-  # System will automatically use in-memory storage if Redis is unavailable
+  # Redis Cache (OPTIONAL)
+  # Uncomment this block if you want to use Redis for session storage
+  # If not enabled, the bot will use in-memory storage (works fine for most cases)
   # redis:
   #   image: redis:7-alpine
   #   container_name: quickcart_redis
@@ -77,6 +72,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      # Uncomment if you enabled Redis above:
       # redis:
       #   condition: service_healthy
     networks:
@@ -94,10 +90,48 @@ services:
 volumes:
   postgres_data:
     name: quickcart_postgres_data
-  redis_data:
-    name: quickcart_redis_data
+  # Uncomment if you enabled Redis:
+  # redis_data:
+  #   name: quickcart_redis_data
 
 networks:
   quickcart_network:
     name: quickcart_network
     driver: bridge
+# ==========================================
+# USAGE EXAMPLES
+# ==========================================
+#
+# Start everything:
+#   docker compose up -d
+#
+# View logs:
+#   docker compose logs -f app
+#
+# Stop everything:
+#   docker compose down
+#
+# Restart bot only:
+#   docker compose restart app
+#
+# Run migrations:
+#   docker compose exec app alembic upgrade head
+#
+# Access database:
+#   docker compose exec db psql -U quickcart
+#
+# ==========================================
+# USING EXTERNAL DATABASE (Advanced)
+# ==========================================
+#
+# Want to use PostgreSQL on a different server?
+# Just change DATABASE_URL in .env to point to your external server:
+#
+#   DATABASE_URL=postgresql+asyncpg://user:pass@192.168.1.100:5432/quickcart
+#
+# The local 'db' container will still run but won't be used.
+# You can stop it with: docker compose stop db
+#
+# Same for Redis - just change REDIS_URL in .env to your external Redis server.
+#
+# ==========================================

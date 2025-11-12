@@ -4,6 +4,7 @@
 
 QuickCart is a complete auto-order bot system for selling digital products (courses, accounts, vouchers, etc.) through Telegram. Customers can browse, order, and receive products automatically after payment - all without manual intervention.
 
+**Repository:** https://github.com/moccalatte/quickcart-v1  
 **Built with python-telegram-bot v22.5** - Latest version with full async/await support  
 📚 Library: https://github.com/python-telegram-bot/python-telegram-bot
 
@@ -20,6 +21,7 @@ QuickCart is a complete auto-order bot system for selling digital products (cour
 - 🔒 **Secure** - Separate audit database, encrypted sensitive data
 - 🌐 **Flexible Deployment** - Works on any server (VPS, cloud, local)
 - 🐳 **Docker Ready** - One-command deployment with Docker Compose
+- 🗄️ **External Database Support** - Deploy PostgreSQL and Redis on separate VPS servers
 
 ---
 
@@ -34,19 +36,46 @@ Before you start, make sure you have:
 
 That's it! No programming knowledge needed. Docker handles everything.
 
-**📖 For absolute beginners:** Read `INSTALL.md` for step-by-step guide with screenshots!
+**🎯 Complete beginner?** Follow the step-by-step guide below - we'll get you running in 10 minutes!
+
+**🚀 Production Deployment:** Need to use external PostgreSQL/Redis? Just change `DATABASE_URL` in `.env` - same docker-compose.yml works for everything!
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start - Complete Beginner Guide
 
-**IMPORTANT:** Never run this before? → Read `INSTALL.md` first for complete guide!
+### Step 1: Get Your Credentials (5 minutes)
 
-### Method 1: Automatic Setup (Easiest)
+Before installing, collect these 4 required credentials:
+
+#### 1.1. Create Telegram Bot
+1. Open Telegram and search for `@BotFather`
+2. Send `/newbot` command
+3. Follow instructions to create your bot
+4. **Save the bot token** (looks like: `1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ`)
+
+#### 1.2. Get Your Telegram User ID
+1. Open Telegram and search for `@userinfobot`
+2. Send `/start` command
+3. **Save your User ID** (looks like: `123456789`)
+
+#### 1.3. Create Pakasir Account
+1. Go to [pakasir.com](https://pakasir.com) and sign up
+2. Create a new project in dashboard
+3. **Save your API Key** (from project settings)
+4. **Save your Project Slug** (from project URL/settings)
+
+✅ Got all 4 credentials? Great! Let's install QuickCart.
+
+---
+
+### Step 2: Install QuickCart (5 minutes)
+
+#### Option A: Automatic Setup (Recommended for Beginners)
 
 ```bash
 # 1. Download QuickCart
-git clone <your-repo-url>
+git clone https://github.com/moccalatte/quickcart-v1.git
 cd quickcart-v1
 
 # 2. Run setup wizard
@@ -54,50 +83,144 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-The wizard will ask for your:
-- Telegram Bot Token (from @BotFather)
-- Telegram User ID (from @userinfobot)
-- Pakasir API Key
-- Pakasir Project Slug
+The wizard will ask for:
+- ✓ Telegram Bot Token (from Step 1.1)
+- ✓ Your Telegram User ID (from Step 1.2)
+- ✓ Pakasir API Key (from Step 1.3)
+- ✓ Pakasir Project Slug (from Step 1.3)
 
-Then automatically starts everything! ✅
+Then it automatically:
+- Generates security keys
+- Creates configuration file
+- Starts all services
+- Runs database migrations
 
-### Method 2: Manual Setup
+**Done!** Skip to Step 3 to test your bot.
+
+---
+
+#### Option B: Manual Setup (For Advanced Users)
 
 ```bash
 # 1. Download QuickCart
-git clone <your-repo-url>
+git clone https://github.com/moccalatte/quickcart-v1.git
 cd quickcart-v1
 
-# 2. Create configuration
-cp .env.example.template .env
+# 2. Create configuration file
+cp .env.template .env
 
-# 3. Edit .env file - fill in 6 REQUIRED values:
-nano .env  # or use any text editor
+# 3. Edit .env file - fill in REQUIRED values:
+nano .env  # or use: vim .env, or open with any text editor
 
-# Required values:
-TELEGRAM_BOT_TOKEN=your_token_from_botfather
-ADMIN_USER_IDS=your_telegram_user_id
-PAKASIR_API_KEY=your_pakasir_api_key
-PAKASIR_PROJECT_SLUG=your_pakasir_slug
-SECRET_KEY=generate_random_32_chars
-ENCRYPTION_KEY=generate_random_32_chars
+# Paste these values (replace with your actual credentials):
+TELEGRAM_BOT_TOKEN=your_token_from_step_1.1
+ADMIN_USER_IDS=your_user_id_from_step_1.2
+PAKASIR_API_KEY=your_api_key_from_step_1.3
+PAKASIR_PROJECT_SLUG=your_slug_from_step_1.3
 
-# Generate keys with:
-# python -c "import secrets; print(secrets.token_urlsafe(32))"
+# Generate security keys (run this command twice, copy each result):
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 
-# 4. Start the bot
+# Paste the generated keys:
+SECRET_KEY=paste_first_generated_key_here
+ENCRYPTION_KEY=paste_second_generated_key_here
+
+# Save and close the file (Ctrl+X, then Y, then Enter in nano)
+
+# 4. Start QuickCart
 docker compose up -d
 
-# 5. Check logs
+# 5. View logs to confirm it's running
 docker compose logs -f app
 ```
 
-### ✅ Verify It Works
+You should see: `✅ Starting QuickCart Bot...` and `✅ Bot started successfully!`
+
+Press `Ctrl+C` to stop viewing logs (bot keeps running in background).
+
+---
+
+### Step 3: Test Your Bot (2 minutes)
 
 1. **Check services are running:**
    ```bash
    docker compose ps
+   ```
+
+2. **Test the bot:**
+   - Open Telegram and search for your bot
+   - Send `/start` command
+   - You should see welcome message!
+
+---
+
+## 🌐 Production Deployment (Optional - For Advanced Users)
+
+**Running on a VPS?** Using external PostgreSQL/Redis? No problem!
+
+Same `docker-compose.yml` works for everything - just change database URLs in `.env`:
+
+```bash
+# In your .env file, change from:
+DATABASE_URL=postgresql+asyncpg://quickcart:quickcart123@db:5432/quickcart
+
+# To your external database server:
+DATABASE_URL=postgresql+asyncpg://quickcart:password@YOUR_DB_IP:5432/quickcart
+
+# Same for Redis (or leave empty to disable):
+REDIS_URL=redis://:password@YOUR_REDIS_IP:6379/0
+
+# Set to production mode:
+ENVIRONMENT=production
+DEBUG=false
+```
+
+Then run the same command:
+```bash
+docker compose up -d
+```
+
+**📚 Complete Production Guide:** [docs/DEPLOYMENT_EXTERNAL_DB.md](docs/DEPLOYMENT_EXTERNAL_DB.md)
+
+### Architecture
+
+```
+┌─────────────────────┐
+│   Application VPS   │
+│   (QuickCart App)   │
+└──────────┬──────────┘
+           │
+           ├─────────────────┐
+           │                 │
+           ▼                 ▼
+┌──────────────────┐  ┌──────────────────┐
+│ PostgreSQL VPS   │  │   Redis VPS      │
+│ - Main DB        │  │   (Optional)     │
+│ - Audit DB       │  │   - Caching      │
+└──────────────────┘  └──────────────────┘
+```
+
+### Key Configuration Changes
+
+When deploying with external databases, the main differences are:
+
+1. **Database URLs:** Point to your PostgreSQL VPS instead of `localhost` or `db`
+2. **Redis URL:** Point to your Redis VPS (or set to `None` if not using Redis)
+3. **Network:** Configure firewall rules to allow app server to connect to database servers
+4. **Security:** Use private network between servers when possible
+
+**Example `.env` for external databases:**
+```bash
+# PostgreSQL on separate server
+DATABASE_URL=postgresql+asyncpg://quickcart:securepass@192.168.1.100:5432/quickcart
+AUDIT_DATABASE_URL=postgresql+asyncpg://quickcart:securepass@192.168.1.100:5432/quickcart_audit
+
+# Redis on separate server (optional)
+REDIS_URL=redis://:redispass@192.168.1.101:6379/0
+
+# Or use hostnames
+DATABASE_URL=postgresql+asyncpg://quickcart:pass@db.example.com:5432/quickcart
+REDIS_URL=redis://:pass@redis.example.com:6379/0
    # All should show "Up"
    ```
 
@@ -139,7 +262,7 @@ All admin commands work directly in Telegram:
 /giveaway - Create voucher codes
 ```
 
-**Full command reference**: See [docs/03-prd.md](docs/03-prd.md) or [plans.md](plans.md)
+**📖 Full command reference:** [docs/00-project_blueprint.md](docs/00-project_blueprint.md) or [docs/03-prd.md](docs/03-prd.md)
 
 ---
 
@@ -234,9 +357,9 @@ quickcart-v1/
 │   └── ...                   # 16 more docs
 │
 ├── tests/                    # Unit & integration tests
-├── docker-compose.yml        # Docker services config
+├── docker-compose.yml        # ONE docker-compose for all scenarios
 ├── Dockerfile                # App container image
-├── .env                      # Your configuration (create from .env.example.template)
+├── .env                      # Your configuration (create from .env.template)
 ├── requirements.txt          # Python dependencies
 └── README.md                 # This file
 ```
@@ -261,7 +384,7 @@ quickcart-v1/
 | `DEBUG` | ⚪ No | `true` | Debug mode |
 | `STORE_NAME` | ⚪ No | `QuickCart Store` | Your store name |
 
-**See `.env.example.template` for complete list with descriptions.**
+**See `.env.template` for complete list with descriptions.**
 
 ### Database Configuration
 
@@ -520,7 +643,299 @@ Built with:
 4. **Set up webhooks** - Critical for automatic order fulfillment
 5. **Monitor logs** - First few days, check logs regularly: `docker compose logs -f app`
 6. **Backup database** - Run `make backup` before major changes
-7. **Read the docs** - Especially [plans.md](plans.md), [03-prd.md](docs/03-prd.md), and [TESTING.md](TESTING.md)
+7. **Read the docs** - Especially [docs/00-project_blueprint.md](docs/00-project_blueprint.md), [docs/03-prd.md](docs/03-prd.md), and [docs/TESTING.md](docs/TESTING.md)
+
+---
+
+## 🔧 Troubleshooting
+
+### Problem: Docker not installed or command not found
+
+**Symptoms:**
+```bash
+bash: docker: command not found
+```
+
+**Solution:**
+```bash
+# Linux (Ubuntu/Debian)
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+# Log out and log back in
+
+# macOS / Windows
+# Download Docker Desktop from https://www.docker.com/get-started
+```
+
+---
+
+### Problem: Permission denied when running docker
+
+**Symptoms:**
+```bash
+permission denied while trying to connect to the Docker daemon socket
+```
+
+**Solution:**
+```bash
+# Add your user to docker group
+sudo usermod -aG docker $USER
+
+# Log out and log back in, or run:
+newgrp docker
+
+# Test:
+docker ps
+```
+
+---
+
+### Problem: Bot doesn't respond to /start
+
+**Symptoms:**
+- Send `/start` to bot in Telegram
+- No response
+
+**Solution:**
+
+1. **Check if bot is running:**
+   ```bash
+   docker compose ps
+   # All services should show "Up"
+   ```
+
+2. **Check logs for errors:**
+   ```bash
+   docker compose logs -f app
+   # Look for error messages
+   ```
+
+3. **Common causes:**
+   - ✗ Wrong bot token → Check `TELEGRAM_BOT_TOKEN` in `.env`
+   - ✗ Bot already connected to webhook → Clear webhook:
+     ```bash
+     curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook"
+     ```
+   - ✗ Database not ready → Wait 30 seconds after starting, then try again
+   - ✗ Admin ID wrong → Verify `ADMIN_USER_IDS` in `.env` matches your Telegram User ID
+
+4. **Restart bot:**
+   ```bash
+   docker compose restart app
+   docker compose logs -f app
+   ```
+
+---
+
+### Problem: Database connection failed
+
+**Symptoms:**
+```
+sqlalchemy.exc.OperationalError: could not connect to server
+```
+
+**Solution:**
+
+1. **Check database is running:**
+   ```bash
+   docker compose ps db
+   # Should show "Up"
+   ```
+
+2. **Check database logs:**
+   ```bash
+   docker compose logs db
+   # Look for "database system is ready to accept connections"
+   ```
+
+3. **Restart database:**
+   ```bash
+   docker compose restart db
+   # Wait 10 seconds
+   docker compose restart app
+   ```
+
+4. **If using external database:**
+   - Verify `DATABASE_URL` in `.env` is correct
+   - Test connection from app server:
+     ```bash
+     docker compose exec app python -c "from sqlalchemy import create_engine; engine = create_engine('YOUR_DATABASE_URL'); engine.connect()"
+     ```
+
+---
+
+### Problem: Payment QR code not showing
+
+**Symptoms:**
+- Order created but no QR code displayed
+- Payment fails silently
+
+**Solution:**
+
+1. **Check Pakasir credentials:**
+   - Verify `PAKASIR_API_KEY` in `.env`
+   - Verify `PAKASIR_PROJECT_SLUG` in `.env`
+   - Test in Pakasir dashboard that project is active
+
+2. **Check logs for Pakasir errors:**
+   ```bash
+   docker compose logs -f app | grep -i pakasir
+   ```
+
+3. **Test Pakasir connection manually:**
+   ```bash
+   docker compose exec app python -c "
+   from src.integrations.pakasir import pakasir_client
+   import asyncio
+   result = asyncio.run(pakasir_client.check_health())
+   print('Pakasir OK' if result else 'Pakasir ERROR')
+   "
+   ```
+
+---
+
+### Problem: Webhook not receiving payments
+
+**Symptoms:**
+- Payment successful in Pakasir
+- Bot doesn't deliver product
+- No webhook notification received
+
+**Solution:**
+
+1. **Check webhook is configured in Pakasir dashboard:**
+   - URL should be: `https://yourdomain.com/webhooks/pakasir`
+   - Must be HTTPS (not HTTP)
+   - Must be publicly accessible
+
+2. **Test webhook endpoint:**
+   ```bash
+   curl -X POST https://yourdomain.com/webhooks/pakasir \
+     -H "Content-Type: application/json" \
+     -d '{"order_id":"TEST123","status":"completed","amount":10000}'
+   
+   # Should return: {"status":"ok"}
+   ```
+
+3. **Check webhook logs:**
+   ```bash
+   docker compose logs -f app | grep webhook
+   ```
+
+4. **For local testing, use ngrok:**
+   ```bash
+   # Terminal 1: Start bot
+   docker compose up -d
+   
+   # Terminal 2: Start ngrok
+   ngrok http 8000
+   
+   # Use ngrok URL in Pakasir dashboard:
+   # https://abc123.ngrok.io/webhooks/pakasir
+   ```
+
+---
+
+### Problem: Port already in use
+
+**Symptoms:**
+```
+Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use
+```
+
+**Solution:**
+
+1. **Find what's using the port:**
+   ```bash
+   # Linux/Mac
+   lsof -i :8000
+   
+   # Windows
+   netstat -ano | findstr :8000
+   ```
+
+2. **Kill the process or change port:**
+   ```bash
+   # Option 1: Kill the process
+   kill -9 <PID>
+   
+   # Option 2: Change port in docker-compose.yml
+   # Change "8000:8000" to "8001:8000"
+   ```
+
+---
+
+### Problem: Migrations fail
+
+**Symptoms:**
+```
+alembic.util.exc.CommandError: Can't locate revision
+```
+
+**Solution:**
+
+1. **Reset migrations (WARNING: destroys data):**
+   ```bash
+   docker compose down -v  # Remove volumes
+   docker compose up -d
+   ```
+
+2. **Or manually run migrations:**
+   ```bash
+   docker compose exec app alembic upgrade head
+   ```
+
+3. **Check migration files exist:**
+   ```bash
+   ls -la migrations/versions/
+   # Should show at least 2 migration files
+   ```
+
+---
+
+### Problem: Out of disk space
+
+**Symptoms:**
+```
+no space left on device
+```
+
+**Solution:**
+
+1. **Clean up Docker:**
+   ```bash
+   docker system prune -a --volumes
+   # WARNING: This removes all unused containers, images, and volumes
+   ```
+
+2. **Check disk usage:**
+   ```bash
+   df -h
+   docker system df
+   ```
+
+---
+
+### Still having issues?
+
+1. **Check logs in detail:**
+   ```bash
+   docker compose logs app | less
+   ```
+
+2. **Verify all environment variables:**
+   ```bash
+   docker compose exec app env | grep -E "(TELEGRAM|PAKASIR|DATABASE)"
+   ```
+
+3. **Run verification script:**
+   ```bash
+   python3 scripts/verify_implementation.py
+   ```
+
+4. **Join our community:**
+   - Create an issue: https://github.com/moccalatte/quickcart-v1/issues
+   - Check existing issues for solutions
 
 ---
 

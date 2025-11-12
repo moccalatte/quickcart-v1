@@ -79,11 +79,11 @@ if [ -f .env ]; then
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_info "Keeping existing .env file"
     else
-        cp .env.example.template .env
+        cp .env.template .env
         print_success "Created new .env file"
     fi
 else
-    cp .env.example.template .env
+    cp .env.template .env
     print_success "Created .env file"
 fi
 

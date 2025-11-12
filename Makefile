@@ -119,7 +119,7 @@ restore: ## Restore database from backup (usage: make restore FILE=backups/quick
 setup: ## Initial setup (copy env, generate keys)
 	@echo "🔧 Setting up QuickCart..."
 	@if [ ! -f .env ]; then \
-		cp .env.example.template .env; \
+		cp .env.template .env; \
 		echo "✅ Created .env file"; \
 		echo "⚠️  Please edit .env and fill in required values!"; \
 	else \

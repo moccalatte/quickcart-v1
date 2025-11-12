@@ -45,12 +45,17 @@ class Settings(BaseSettings):
     debug: bool = Field(default=True)
     log_level: str = Field(default="INFO")
 
-    # Database URLs (defaults for Docker Compose)
+    # Database URLs
+    # For Docker Compose (development): use db:5432
+    # For separate VPS (production): use your VPS IP/hostname
+    # Example: postgresql+asyncpg://user:pass@your-db-server.com:5432/dbname
     database_url: str = Field(
-        default="postgresql+asyncpg://quickcart:quickcart123@db:5432/quickcart"
+        default="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart",
+        description="Main database URL - change 'localhost' to your PostgreSQL server IP/hostname",
     )
     audit_database_url: str = Field(
-        default="postgresql+asyncpg://quickcart:quickcart123@db:5432/quickcart_audit"
+        default="postgresql+asyncpg://quickcart:quickcart123@localhost:5432/quickcart_audit",
+        description="Audit database URL - can be same or different PostgreSQL server",
     )
 
     # Database pool settings
@@ -64,7 +69,13 @@ class Settings(BaseSettings):
     audit_db_max_overflow: int = Field(default=5)
 
     # Redis URL (optional - system works without Redis)
-    redis_url: Optional[str] = Field(default="redis://:redis123@redis:6379/0")
+    # For Docker Compose (development): use redis:6379
+    # For separate VPS (production): use your Redis server IP/hostname
+    # Example: redis://:password@your-redis-server.com:6379/0
+    redis_url: Optional[str] = Field(
+        default=None,
+        description="Redis URL - set to your Redis server IP/hostname, or None to disable",
+    )
 
     # Session TTL (24 hours in seconds)
     session_ttl_seconds: int = Field(default=86400)

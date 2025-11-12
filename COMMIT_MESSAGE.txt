@@ -1,0 +1,69 @@
+Clean up root bloat and simplify deployment for beginners
+
+Removed bloat, consolidated templates, and made the entire codebase
+beginner-friendly. ONE .env.template, ONE docker-compose.yml for ALL scenarios.
+
+Changes:
+
+✅ DELETED (9 files):
+  - FINAL_COMMIT_MESSAGE.txt, READY_TO_COMMIT.md (temp files)
+  - test_imports.py (misplaced)
+  - .env.example.template, .env.production.template (consolidated)
+  - docker-compose.production.yml (simplified to ONE file)
+  - CLEANUP_COMMIT.md, CLEANUP_SUMMARY.txt, verify_cleanup.sh (cleanup artifacts)
+
+✅ MOVED TO docs/ (3 files):
+  - plans.md → docs/00-project_blueprint.md
+  - DEPLOYMENT_QUICKREF.md → docs/deployment_quickref.md
+  - EXTERNAL_DB_CHANGES.md → docs/external_db_changes.md
+
+✅ CREATED:
+  - .env.template (190 lines, unified dev + production config)
+
+✅ SIMPLIFIED:
+  - ONE docker-compose.yml works for ALL scenarios (dev/prod/external DB)
+  - Just change DATABASE_URL in .env to use external database
+  - Same commands everywhere: docker compose up -d
+  - No need to choose between multiple files
+
+✅ UPDATED REFERENCES IN:
+  - README.md (simplified deployment instructions)
+  - .dockerignore
+  - .github/workflows/ci.yml
+  - Makefile
+  - docker-compose.yml (beginner-friendly comments)
+  - setup.sh
+  - docs/DEPLOYMENT_EXTERNAL_DB.md
+  - docs/deployment_quickref.md
+  - docs/external_db_changes.md
+  - CHANGELOG.md
+
+BEFORE:
+  - 3 env templates (confusing)
+  - 2 docker-compose files (which one to use?)
+  - 9 bloat files in root
+  - Scattered documentation
+
+AFTER:
+  - 1 .env.template (covers everything)
+  - 1 docker-compose.yml (beginner-friendly)
+  - Clean 15-item root directory
+  - All docs organized in docs/
+
+USER EXPERIENCE:
+
+Development:
+  cp .env.template .env
+  nano .env  # Fill in credentials
+  docker compose up -d
+
+Production with external DB:
+  cp .env.template .env
+  nano .env  # Set ENVIRONMENT=production, change DATABASE_URL
+  docker compose up -d  # Same command!
+
+No confusion. No multiple files. Just works!
+
+Type: chore(cleanup)
+Breaking: No (backwards compatible)
+Impact: Beginner-friendly, simpler deployment

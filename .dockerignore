@@ -34,7 +34,7 @@ docs/
 .github/
 
 # Environment files (use docker-compose env)
-.env.example.template
+.env.template
 .env.local
 
 # Logs

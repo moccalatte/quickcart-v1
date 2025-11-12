@@ -96,7 +96,7 @@ jobs:
 
       - name: Test Docker Compose config
         run: |
-          cp .env.example.template .env
+          cp .env.template .env
           docker compose config
 
   database:
