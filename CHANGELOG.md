@@ -5,6 +5,29 @@ All notable changes to QuickCart will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Critical:** Fixed httpx version conflict with python-telegram-bot 22.5
+  - Updated httpx from 0.25.2 to 0.27.2 (required by python-telegram-bot)
+  - python-telegram-bot 22.5 requires httpx>=0.27,<0.29
+- **CI/CD:** Updated GitHub Actions CodeQL from v2 to v3 (v2 deprecated)
+- **CI/CD:** Added proper permissions for security scanning workflow
+- **CI/CD:** Made import test CI-friendly with continue-on-error for external deps
+- Updated all dependencies to latest compatible versions:
+  - fastapi: 0.104.1 → 0.109.0
+  - uvicorn: 0.24.0 → 0.27.0
+  - alembic: 1.12.1 → 1.13.1
+  - SQLAlchemy: 2.0.23 → 2.0.25
+  - pydantic: 2.5.2 → 2.5.3
+  - cryptography: 41.0.7 → 42.0.0
+  - Pillow: 10.1.0 → 10.2.0
+
+### Added
+- DEPENDENCIES.md - Comprehensive dependency compatibility guide
+- Detailed dependency conflict troubleshooting documentation
+- CI/CD environment detection in test_imports.py
+
 ## [1.0.0] - 2025-01-12
 
 ### Added
