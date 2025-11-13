@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     debug: bool = Field(default=True)
     log_level: str = Field(default="INFO")
 
+    # Application port (host)
+    app_port: int = Field(
+        default=8000, description="Port for FastAPI/Uvicorn app (read from APP_PORT)"
+    )
+
     # Database URLs
     # For Docker Compose (development): use db:5432
     # For separate VPS (production): use your VPS IP/hostname

@@ -17,7 +17,7 @@ services:
     container_name: quickcart_app
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${APP_PORT:-8000}:8000"
     env_file:
       - .env
     # The `src` directory is not mounted to ensure the container is immutable.
@@ -31,7 +31,7 @@ services:
         echo '🔄 Running database migrations...' &&
         alembic upgrade head &&
         echo '✅ Starting QuickCart Bot...' &&
-        python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+        python -m uvicorn src.main:app --host 0.0.0.0 --port ${APP_PORT:-8000}
       "
 
 # ==========================================
