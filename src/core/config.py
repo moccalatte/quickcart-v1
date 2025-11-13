@@ -100,17 +100,42 @@ class Settings(BaseSettings):
     refund_multiplier_3_claims: float = Field(default=0.5)
     refund_multiplier_over_3_claims: float = Field(default=0.4)
 
-    # Store settings
-    store_name: str = Field(default="QuickCart Store")
-    documentation_url: str = Field(default="https://notion.so/quickcart-docs")
+    # Store settings (customizable for each deployment)
+    store_name: str = Field(
+        default="QuickCart Store", description="Store name shown in bot messages"
+    )
+    bot_name: str = Field(
+        default="QuickCart Bot",
+        description="Bot name shown in help and version messages",
+    )
+    bot_username: Optional[str] = Field(
+        default=None, description="Bot username (e.g., @YourBot) - optional"
+    )
+    documentation_url: str = Field(
+        default="https://notion.so/quickcart-docs",
+        description="URL to your store documentation",
+    )
+    support_contact: Optional[str] = Field(
+        default=None, description="Support contact (username, phone, or URL)"
+    )
 
     # External services (optional)
     sentry_dsn: Optional[str] = Field(default=None)
 
     # Telegram welcome sticker
     telegram_welcome_sticker: str = Field(
-        default="CAACAgIAAxkBAAIDbWkLZHuqPRCqCqmL9flozT9YJdWOAAIZUAAC4KOCB7lIn3OKexieNgQ"
+        default="CAACAgIAAxkBAAIDbWkLZHuqPRCqCqmL9flozT9YJdWOAAIZUAAC4KOCB7lIn3OKexieNgQ",
+        description="Telegram sticker file ID to send on /start (optional, can be left as default or changed)",
     )
+
+    # PostgreSQL credentials for init scripts (production only)
+    # These are only used by init-db.sql if you need to create databases
+    postgres_user: str = Field(default="quickcart")
+    postgres_password: str = Field(default="quickcart")
+    postgres_db: str = Field(default="quickcart")
+    audit_postgres_user: str = Field(default="quickcart_audit")
+    audit_postgres_password: str = Field(default="quickcart_audit")
+    audit_postgres_db: str = Field(default="quickcart_audit")
 
     # ========================================
     # Computed properties

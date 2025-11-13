@@ -129,8 +129,9 @@ async def version_command(update: Update, context):
         return
 
     await update.message.reply_text(
-        "🤖 **QuickCart Bot**\n\n"
-        "Version: 1.0.0\n"
+        f"🤖 **{settings.bot_name}**\n\n"
+        f"Store: {settings.store_name}\n"
+        "Version: 1.1.0\n"
         "Environment: " + settings.environment + "\n"
         "Python Telegram Bot: v22.5"
     )
@@ -272,7 +273,7 @@ async def main():
     """Run the bot in polling mode (for local testing)"""
     app = create_bot_application()
 
-    logger.info("🚀 Starting QuickCart bot in polling mode...")
+    logger.info(f"🚀 Starting {settings.bot_name} in polling mode...")
     await app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

@@ -153,7 +153,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Reference: plans.md Section 3.1
     """
     help_text = (
-        "🤖 **QuickCart Bot - Panduan Penggunaan**\n\n"
+        f"🤖 **{settings.bot_name} - Panduan Penggunaan**\n\n"
         "**Perintah Tersedia:**\n"
         "/start - Mulai bot atau kembali ke menu utama\n"
         "/stock - Lihat ketersediaan stok produk\n"
@@ -213,7 +213,7 @@ async def order_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     Reference: plans.md Section 3.1
     """
     order_guide = (
-        "📖 **Panduan Pemesanan QuickCart**\n\n"
+        f"📖 **Panduan Pemesanan {settings.store_name}**\n\n"
         "**Langkah-langkah:**\n\n"
         "1️⃣ **Pilih Produk**\n"
         "   • Ketik nomor produk (contoh: 1)\n"
