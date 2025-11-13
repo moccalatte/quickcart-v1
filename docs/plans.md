@@ -274,7 +274,10 @@ QuickCart is a Telegram auto-order bot for digital products (e.g., tutorials, pr
 | id                 | SERIAL        | PK                                         |
 | invoice_id         | VARCHAR(20)   | Unique, Indexed                            |
 | user_id            | BIGINT        | FK to users.id                             |
-| total_bill         | DECIMAL(15,2) |                                            |
+| subtotal           | DECIMAL(15,2) | Product cost before discounts/fees         |
+| voucher_discount   | DECIMAL(15,2) | Discount from voucher (default: 0.00)      |
+| payment_fee        | DECIMAL(15,2) | Payment processing fee (default: 0.00)     |
+| total_bill         | DECIMAL(15,2) | Final amount (subtotal - discount + fee)   |
 | payment_method     | VARCHAR(20)   | 'qris', 'account_balance'                  |
 | status             | VARCHAR(10)   | 'pending', 'paid', 'expired', 'cancelled'  |
 | created_at         | TIMESTAMPTZ   |                                            |

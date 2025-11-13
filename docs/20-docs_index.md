@@ -200,11 +200,16 @@ This documentation suite provides complete coverage of QuickCart's design, imple
 - **ai_collaboration.md** — AI development assistance guidelines
 - **error_fix_guide.md** — Common error resolution procedures
 - **free_alternatives.md** — Open source alternative recommendations
-- **prompt.md** — AI prompt engineering guidelines
+- **prompt.md** — AI prompt engineering guidelines (ultraThink methodology)
 
-### Project Planning (External to numbered docs)
-- **plans.md** — Original project planning document (reference only)
-- **pakasir.md** — Pakasir payment gateway documentation (reference only)
+### Project Planning & Reference
+- **plans.md** — Original functional blueprint (reference only)
+- **pakasir.md** — Pakasir payment gateway documentation
+
+### Deployment & Operations
+- **DEPLOYMENT_EXTERNAL_DB.md** — External database deployment guide
+- **TESTING.md** — Testing procedures and guidelines
+- **CHANGELOG.md** — Version history and changes
 
 ---
 

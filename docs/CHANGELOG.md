@@ -7,6 +7,108 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-01-15
+
+### Added
+- **Flexible Navigation System**: Implemented Redis-based session management allowing users to switch between any flow without canceling
+  - Users can click any button at any time
+  - Session state updated atomically via Redis
+  - No ConversationHandler used (anti-pattern for flexible navigation)
+  - Context manager helpers in `src/bot/utils/context.py` for database access
+- **Bot Handler Implementation**: Complete handler system for user interactions
+  - `command_handlers.py` - Public commands (/start, /help, /stock, /order, /refund)
+  - `callback_handlers.py` - All inline button callbacks with flexible routing
+  - `message_handlers.py` - Text and photo message handling
+  - Proper session state checking and updating in all handlers
+- **Onboarding Flow**: Complete user registration with name, WhatsApp, and email collection
+  - Skip functionality for all fields
+  - Default values (Anonymous, null, null)
+  - Welcome sticker support
+- **Product Browsing**: Full product catalog navigation
+  - Category browsing with dynamic buttons
+  - Best sellers list with Top Buyers option
+  - All products pagination
+  - Product detail view with quantity adjustment
+- **Account Management**: User profile and balance management
+  - Account info display
+  - Profile editing placeholders (name, email, WhatsApp)
+  - Transaction history interface
+  - Deposit flow UI
+- **Admin Message System**: Forward user messages to all admins
+  - Text and photo message support
+  - User info included in forwarded messages
+  - Admin notification system
+- **Reply Keyboard System**: Dynamic product quick access (1-24 buttons)
+  - Main menu buttons (LIST PRODUK, STOK, AKUN, KIRIM PESAN)
+  - Product ID quick access based on available stock
+- **Inline Keyboard System**: Complete button library for all flows
+  - Main menu navigation
+  - Product selection and quantity adjustment
+  - Payment method selection
+  - Account management
+  - Deposit flow
+  - Admin confirmations
+
+### Changed
+- **Removed ConversationHandler**: Replaced with flexible session-based navigation
+  - All conversation states removed from `application.py`
+  - Session state managed via Redis with atomic updates
+  - Users no longer stuck in flows
+- **Updated README.md**: Accurate development status and feature checklist
+  - Removed misleading "complete" claims
+  - Added realistic feature status (✅ implemented, 🔧 in development)
+  - Current bot capabilities clearly documented
+- **Updated 00-project_blueprint.md**: Implementation status section added
+  - Detailed checklist of completed features
+  - In-development features listed
+  - Removed "IN DEVELOPMENT" warning, replaced with accurate status
+- **Updated plans.md**: Database schema alignment
+  - Added `subtotal`, `voucher_discount`, `payment_fee` fields to orders table
+  - Schema now matches actual migration (001_initial_schema.py)
+  - Accurate reflection of voucher system support
+
+### Removed
+- **Documentation Bloat**: Cleaned up redundant markdown files
+  - Deleted `FIXES_2025_01_METADATA_CI.md` (consolidated to CHANGELOG)
+  - Deleted `example.md` (just an example file)
+  - Deleted `pakasir_integration_example.md` (redundant with pakasir.md)
+  - Deleted `deployment_quickref.md` (redundant with DEPLOYMENT_EXTERNAL_DB.md)
+  - Deleted `external_db_changes.md` (temporary notes, consolidated)
+  - Updated `20-docs_index.md` to reflect cleanup
+- **ConversationHandler States**: All removed from bot application
+  - `ONBOARDING_NAME`, `ONBOARDING_WHATSAPP`, `ONBOARDING_EMAIL`
+  - `ORDER_SELECT_PRODUCT`, `ORDER_ADJUST_QUANTITY`, `ORDER_SELECT_PAYMENT`
+  - `ACCOUNT_EDIT_NAME`, `ACCOUNT_EDIT_EMAIL`, `ACCOUNT_EDIT_WHATSAPP`
+  - `DEPOSIT_AMOUNT`, `MESSAGE_TO_ADMIN`, `ADMIN_BROADCAST`
+
+### Technical Details
+- **Session Management**: `src/core/redis.py` - SecureRedisSession class
+  - `save_session()` - Atomic session updates with TTL
+  - `get_session()` - Safe session retrieval
+  - `clear_session()` - Flow reset for flexible navigation
+  - `update_session_field()` - Partial updates without reload
+- **Bot Context**: `src/bot/utils/context.py` - Database access helpers
+  - `BotContext` class - Multi-repository context manager
+  - `get_db()` - Direct database session access
+  - `get_user_repo()`, `get_product_repo()`, `get_order_repo()` - Specific repositories
+  - `get_user_service()` - Service layer access
+- **Handler Architecture**: Modular design with clear separation
+  - Command handlers: User-initiated commands
+  - Callback handlers: Inline button interactions
+  - Message handlers: Text and media messages
+  - All handlers use async/await properly
+  - Error handling with user-friendly messages
+
+### In Development
+- Order processing with stock reservation
+- Pakasir QRIS payment integration
+- Payment expiry handling and cleanup
+- Product delivery after payment
+- Admin command implementations
+- Deposit flow completion
+- Voucher system activation
+- Balance payment processing
+
 ### Fixed
 - **Critical:** Fixed httpx version conflict with python-telegram-bot 22.5
   - Updated httpx from 0.25.2 to 0.27.2 (required by python-telegram-bot)
@@ -176,6 +278,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-**Last Updated**: 2025-01-12  
-**Current Version**: 1.0.0  
-**Status**: Foundation Complete - Ready for Implementation
+**Last Updated**: 2025-01-15  
+**Current Version**: 1.1.0  
+**Status**: Core Bot Implemented - Payment Integration Next

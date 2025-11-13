@@ -1,7 +1,9 @@
 """
 QuickCart Bot Application
 Reference: plans.md - All user flows and commands
-Creates and configures the Telegram bot with all handlers
+
+Creates and configures the Telegram bot with all handlers.
+Implements flexible navigation using Redis session state (not ConversationHandler).
 """
 
 import logging
@@ -11,129 +13,71 @@ from telegram.ext import (
     Application,
     CallbackQueryHandler,
     CommandHandler,
-    ConversationHandler,
     MessageHandler,
     filters,
 )
 
+from src.bot.handlers.callback_handlers import handle_callback_query
+from src.bot.handlers.command_handlers import (
+    help_command,
+    order_command,
+    refund_command,
+    skip_command,
+    start_command,
+    stock_command,
+)
+from src.bot.handlers.message_handlers import (
+    handle_photo_message,
+    handle_text_message,
+)
 from src.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# =============================================================================
-# Conversation States (for multi-step flows)
-# =============================================================================
-
-# Onboarding states
-ONBOARDING_NAME = 1
-ONBOARDING_WHATSAPP = 2
-ONBOARDING_EMAIL = 3
-
-# Order flow states
-ORDER_SELECT_PRODUCT = 10
-ORDER_ADJUST_QUANTITY = 11
-ORDER_SELECT_PAYMENT = 12
-
-# Account edit states
-ACCOUNT_EDIT_NAME = 20
-ACCOUNT_EDIT_EMAIL = 21
-ACCOUNT_EDIT_WHATSAPP = 22
-
-# Deposit states
-DEPOSIT_AMOUNT = 30
-
-# Message to admin states
-MESSAGE_TO_ADMIN = 40
-
-# Admin broadcast states
-ADMIN_BROADCAST = 50
-
 
 # =============================================================================
-# Handler Imports (to be implemented)
-# =============================================================================
-
-# We'll import handlers from separate modules for organization
-# from .handlers import (
-#     command_handlers,
-#     callback_handlers,
-#     message_handlers,
-#     admin_handlers,
-# )
-
-
-# =============================================================================
-# Placeholder Handlers (will be replaced with actual implementations)
-# =============================================================================
-
-
-async def start_command(update: Update, context):
-    """
-    /start command - Welcome message and onboarding
-    Reference: plans.md Section 2.1
-    """
-    user = update.effective_user
-    await update.message.reply_text(
-        f"Welcome {user.first_name}! This is a placeholder.\n"
-        "Full implementation coming soon."
-    )
-
-
-async def help_command(update: Update, context):
-    """Help command"""
-    await update.message.reply_text(
-        "QuickCart Bot - Digital Product Auto-Order System\n\n"
-        "Commands:\n"
-        "/start - Start the bot\n"
-        "/stock - View available stock\n"
-        "/order - Order guide\n"
-        "/refund - Calculate refund\n"
-    )
-
-
-async def stock_command(update: Update, context):
-    """
-    /stock command - Show available products
-    Reference: plans.md Section 3.1
-    """
-    await update.message.reply_text("📦 Stock list placeholder")
-
-
-async def order_command(update: Update, context):
-    """
-    /order command - Order guide
-    Reference: plans.md Section 3.1
-    """
-    await update.message.reply_text("📖 Order guide placeholder")
-
-
-async def refund_command(update: Update, context):
-    """
-    /refund command - Calculate refund
-    Reference: plans.md Section 3.1 & 6.1
-    """
-    await update.message.reply_text("💰 Refund calculation placeholder")
-
-
-# =============================================================================
-# Admin Command Handlers (Placeholder)
+# Admin Command Handlers (Placeholder - to be implemented)
 # =============================================================================
 
 
 async def add_product_command(update: Update, context):
-    """Admin: /add - Add new product"""
+    """
+    Admin: /add - Add new product
+    Usage: /add <id> <name> <price_customer> [price_reseller] [category] [description]
+    """
     user_id = update.effective_user.id
     if user_id not in settings.admin_ids:
         return  # Silent fail for non-admins per plans.md
-    await update.message.reply_text("Admin: Add product placeholder")
+
+    await update.message.reply_text(
+        "⚙️ **Admin: Tambah Produk**\n\n"
+        "Format:\n"
+        "`/add <id> <nama> <harga_customer> [harga_reseller] [kategori] [deskripsi]`\n\n"
+        "Contoh:\n"
+        "`/add 1 Tutorial Premium 50000 40000 Tutorial Lengkap banget`\n\n"
+        "Fitur ini sedang dalam pengembangan.",
+        parse_mode="Markdown",
+    )
 
 
 async def addstock_command(update: Update, context):
-    """Admin: /addstock - Add stock to product"""
+    """
+    Admin: /addstock - Add stock to product
+    Usage: /addstock <product_id> <content1> | <content2> | <content3>
+    """
     user_id = update.effective_user.id
     if user_id not in settings.admin_ids:
         return
-    await update.message.reply_text("Admin: Add stock placeholder")
+
+    await update.message.reply_text(
+        "⚙️ **Admin: Tambah Stok**\n\n"
+        "Format:\n"
+        "`/addstock <product_id> <konten1> | <konten2> | <konten3>`\n\n"
+        "Contoh:\n"
+        "`/addstock 1 AKUN001 | AKUN002 | AKUN003`\n\n"
+        "Fitur ini sedang dalam pengembangan.",
+        parse_mode="Markdown",
+    )
 
 
 async def delete_product_command(update: Update, context):
@@ -141,7 +85,13 @@ async def delete_product_command(update: Update, context):
     user_id = update.effective_user.id
     if user_id not in settings.admin_ids:
         return
-    await update.message.reply_text("Admin: Delete product placeholder")
+
+    await update.message.reply_text(
+        "⚙️ **Admin: Hapus Produk**\n\n"
+        "Format: `/del <product_id>`\n\n"
+        "Fitur ini sedang dalam pengembangan.",
+        parse_mode="Markdown",
+    )
 
 
 async def info_command(update: Update, context):
@@ -149,7 +99,13 @@ async def info_command(update: Update, context):
     user_id = update.effective_user.id
     if user_id not in settings.admin_ids:
         return
-    await update.message.reply_text("Admin: User info placeholder")
+
+    await update.message.reply_text(
+        "⚙️ **Admin: Info User**\n\n"
+        "Format: `/info <user_id>`\n\n"
+        "Fitur ini sedang dalam pengembangan.",
+        parse_mode="Markdown",
+    )
 
 
 async def broadcast_command(update: Update, context):
@@ -157,7 +113,13 @@ async def broadcast_command(update: Update, context):
     user_id = update.effective_user.id
     if user_id not in settings.admin_ids:
         return
-    await update.message.reply_text("Admin: Broadcast placeholder")
+
+    await update.message.reply_text(
+        "⚙️ **Admin: Broadcast**\n\n"
+        "Format: `/broadcast <pesan>`\n\n"
+        "Fitur ini sedang dalam pengembangan.",
+        parse_mode="Markdown",
+    )
 
 
 async def version_command(update: Update, context):
@@ -165,101 +127,13 @@ async def version_command(update: Update, context):
     user_id = update.effective_user.id
     if user_id not in settings.admin_ids:
         return
-    await update.message.reply_text("QuickCart v1.0.0")
 
-
-# =============================================================================
-# Callback Query Handlers (Placeholder)
-# =============================================================================
-
-
-async def callback_query_handler(update: Update, context):
-    """
-    Handle all inline button callbacks
-    Reference: plans.md Section 2 - All callback patterns
-    """
-    query = update.callback_query
-    await query.answer()
-
-    callback_data = query.data
-
-    # Route to appropriate handler based on callback data prefix
-    if callback_data.startswith("menu:"):
-        await handle_menu_callback(update, context)
-    elif callback_data.startswith("product:"):
-        await handle_product_callback(update, context)
-    elif callback_data.startswith("qty:"):
-        await handle_quantity_callback(update, context)
-    elif callback_data.startswith("pay:"):
-        await handle_payment_callback(update, context)
-    elif callback_data.startswith("account:"):
-        await handle_account_callback(update, context)
-    elif callback_data.startswith("deposit:"):
-        await handle_deposit_callback(update, context)
-    else:
-        await query.edit_message_text("Feature coming soon!")
-
-
-async def handle_menu_callback(update: Update, context):
-    """Handle menu navigation callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Menu callback: {query.data}")
-
-
-async def handle_product_callback(update: Update, context):
-    """Handle product selection callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Product callback: {query.data}")
-
-
-async def handle_quantity_callback(update: Update, context):
-    """Handle quantity adjustment callbacks"""
-    query = update.callback_query
-    await query.answer("Quantity adjusted")
-
-
-async def handle_payment_callback(update: Update, context):
-    """Handle payment method callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Payment callback: {query.data}")
-
-
-async def handle_account_callback(update: Update, context):
-    """Handle account management callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Account callback: {query.data}")
-
-
-async def handle_deposit_callback(update: Update, context):
-    """Handle deposit callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Deposit callback: {query.data}")
-
-
-# =============================================================================
-# Message Handlers (Placeholder)
-# =============================================================================
-
-
-async def text_message_handler(update: Update, context):
-    """
-    Handle text messages from users
-    - Product ID input (numbers)
-    - Onboarding flow responses
-    - Admin message replies
-    """
-    text = update.message.text
-
-    # Check if it's a number (product ID)
-    if text.isdigit():
-        product_id = int(text)
-        await update.message.reply_text(
-            f"You selected product #{product_id}\n(Full flow coming soon)"
-        )
-    else:
-        await update.message.reply_text(
-            "I don't understand. Please use the buttons or /help"
-        )
+    await update.message.reply_text(
+        "🤖 **QuickCart Bot**\n\n"
+        "Version: 1.0.0\n"
+        "Environment: " + settings.environment + "\n"
+        "Python Telegram Bot: v22.5"
+    )
 
 
 # =============================================================================
@@ -269,12 +143,18 @@ async def text_message_handler(update: Update, context):
 
 async def error_handler(update: Update, context):
     """Log errors caused by updates"""
-    logger.error(f"Update {update} caused error {context.error}")
+    logger.error(
+        f"Update {update} caused error {context.error}", exc_info=context.error
+    )
 
     if update and update.effective_message:
-        await update.effective_message.reply_text(
-            "An error occurred. Please try again or contact admin."
-        )
+        try:
+            await update.effective_message.reply_text(
+                "❌ Terjadi kesalahan sistem.\n"
+                "Silakan coba lagi atau hubungi admin jika masalah berlanjut."
+            )
+        except Exception as e:
+            logger.error(f"Failed to send error message to user: {e}")
 
 
 # =============================================================================
@@ -287,13 +167,16 @@ def create_bot_application() -> Application:
     Create and configure the Telegram bot application
     with all handlers registered according to plans.md
 
+    Uses flexible navigation - no ConversationHandler
+    Session state managed via Redis
+
     Returns:
         Configured Application instance
     """
     # Create application
     app = Application.builder().token(settings.telegram_bot_token).build()
 
-    logger.info("Registering bot handlers...")
+    logger.info("🔧 Registering bot handlers...")
 
     # =============================================================================
     # Public Command Handlers (Section 3.1)
@@ -305,6 +188,7 @@ def create_bot_application() -> Application:
     app.add_handler(CommandHandler("order", order_command))
     app.add_handler(CommandHandler("refund", refund_command))
     app.add_handler(CommandHandler("reff", refund_command))  # Alias
+    app.add_handler(CommandHandler("skip", skip_command))  # For onboarding
 
     # =============================================================================
     # Admin Command Handlers (Section 3.2)
@@ -349,19 +233,22 @@ def create_bot_application() -> Application:
     # Callback Query Handlers (Section 2 - All inline buttons)
     # =============================================================================
 
-    app.add_handler(CallbackQueryHandler(callback_query_handler))
+    # Single handler routes all callbacks based on prefix
+    # This supports flexible navigation - users can click any button anytime
+    app.add_handler(CallbackQueryHandler(handle_callback_query))
 
     # =============================================================================
     # Message Handlers (Text, photos for admin messages, etc.)
     # =============================================================================
 
     # Text messages (product selection, onboarding, etc.)
+    # This handler supports flexible navigation by checking session state
     app.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, text_message_handler)
+        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message)
     )
 
     # Photo messages (for user messages to admin)
-    # app.add_handler(MessageHandler(filters.PHOTO, photo_message_handler))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo_message))
 
     # =============================================================================
     # Error Handler
@@ -370,6 +257,8 @@ def create_bot_application() -> Application:
     app.add_error_handler(error_handler)
 
     logger.info("✅ All bot handlers registered successfully")
+    logger.info("🎯 Flexible navigation enabled - no ConversationHandler")
+    logger.info("💾 Session state managed via Redis")
 
     return app
 
@@ -383,7 +272,7 @@ async def main():
     """Run the bot in polling mode (for local testing)"""
     app = create_bot_application()
 
-    logger.info("Starting QuickCart bot in polling mode...")
+    logger.info("🚀 Starting QuickCart bot in polling mode...")
     await app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

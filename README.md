@@ -2,23 +2,24 @@
 
 > **Automated digital product sales bot for Telegram with QRIS payment integration.**
 
-QuickCart is a complete auto-order bot system for selling digital products (courses, accounts, vouchers, etc.) through Telegram. Customers can browse, order, and receive products automatically after payment—all without manual intervention.
+QuickCart is an auto-order bot system for selling digital products (courses, accounts, vouchers, etc.) through Telegram. Customers can browse, order, and receive products automatically after payment—all without manual intervention.
 
-**Repository:** https://github.com/moccalatte/quickcart-v1  
-**Built with:** `python-telegram-bot`, `FastAPI`, `SQLAlchemy`, and `Docker`.
+> **⚠️ DEVELOPMENT STATUS:** Core infrastructure is complete. Bot handlers and payment integration are currently in development. See [docs/00-project_blueprint.md](docs/00-project_blueprint.md) for detailed status.
+
+**Built with:** `python-telegram-bot` v22.5, `FastAPI`, `PostgreSQL`, `Redis`, `SQLAlchemy`, and `Docker`.
 
 ---
 
 ## ✨ Features
 
-- 🛍️ **Product Catalog**: Browse products by category, best sellers, or view all.
-- 💳 **QRIS Payment**: Automatic payment via Pakasir gateway.
-- ⏱️ **Payment Expiry**: Payments automatically expire if not completed.
-- 👥 **User Roles**: Customer, Reseller, and Admin roles.
-- 🎫 **Voucher System**: Create and distribute discount codes.
-- 📊 **Audit Logging**: Complete transaction history for compliance in a separate database.
-- 🐳 **Docker Ready**: Simple, fast deployment for local development and production.
-- 🗄️ **In-Memory Fallback**: The system can function without Redis, making it lightweight for smaller setups.
+- 🛍️ **Product Catalog**: Browse products by category, best sellers, or view all *(in development)*
+- 💳 **QRIS Payment**: Automatic payment via Pakasir gateway *(in development)*
+- ⏱️ **Flexible Navigation**: Users can switch between any flow without canceling
+- 👥 **User Roles**: Customer, Reseller, and Admin roles
+- 🎫 **Voucher System**: Create and distribute discount codes *(database ready)*
+- 📊 **Audit Logging**: Complete transaction history for compliance in a separate database
+- 🐳 **Docker Ready**: Simple, fast deployment for local development and production
+- 🗄️ **Redis with Fallback**: Session management with optional in-memory fallback
 
 ---
 
@@ -26,11 +27,11 @@ QuickCart is a complete auto-order bot system for selling digital products (cour
 
 Before you start, make sure you have:
 
-1.  **Docker & Docker Compose** installed ([Get Docker](https://docs.docker.com/get-docker/)).
-2.  **Git** installed.
-3.  A **Telegram Bot Token** from [@BotFather](https://t.me/BotFather).
-4.  Your personal **Telegram User ID** from a bot like [@userinfobot](https://t.me/userinfobot).
-5.  A **Pakasir Account** for the payment gateway.
+1.  **Docker & Docker Compose** installed ([Get Docker](https://docs.docker.com/get-docker/))
+2.  **Git** installed
+3.  A **Telegram Bot Token** from [@BotFather](https://t.me/BotFather)
+4.  Your personal **Telegram User ID** from a bot like [@userinfobot](https://t.me/userinfobot)
+5.  A **Pakasir Account** for the payment gateway *(for production payment processing)*
 
 ---
 
@@ -84,6 +85,16 @@ docker compose logs -f app
 ```
 
 You should see a message indicating the bot has started successfully. You can now go to Telegram and start a conversation with your bot.
+
+**Current Bot Capabilities:**
+- ✅ User onboarding and registration
+- ✅ Main menu navigation
+- ✅ Product browsing interface
+- ✅ Account management
+- ✅ Flexible session-based navigation
+- 🔧 Order processing (in development)
+- 🔧 Payment integration (in development)
+- 🔧 Admin commands (in development)
 
 ---
 
@@ -168,19 +179,27 @@ docker compose exec db psql -U quickcart -d quickcart
 ```
 quickcart-v1/
 ├── src/                      # Source code
-│   ├── core/                 # Config, database, redis
-│   ├── models/               # Database models
-│   ├── repositories/         # Database operations
-│   ├── services/             # Business logic
-│   ├── bot/                  # Telegram bot application and handlers
-│   └── integrations/         # Pakasir API client
+│   ├── core/                 # Config, database, redis, security
+│   ├── models/               # SQLAlchemy database models
+│   ├── repositories/         # Data access layer
+│   ├── services/             # Business logic layer
+│   ├── bot/                  # Telegram bot handlers & keyboards
+│   │   ├── handlers/         # Command, callback, message handlers
+│   │   ├── keyboards/        # Reply & inline keyboards
+│   │   └── utils/            # Bot utilities
+│   └── integrations/         # External API clients (Pakasir)
 │
-├── migrations/               # Database migrations
-├── docs/                     # Project documentation
+├── migrations/               # Alembic database migrations
+│   └── versions/             # Migration scripts
+├── docs/                     # Comprehensive project documentation
+│   ├── 00-20-*.md            # Numbered design documents
+│   ├── plans.md              # Original functional blueprint
+│   └── *.md                  # Additional guides and references
 ├── tests/                    # Unit & integration tests
-├── docker-compose.yml        # For local development
-├── docker-compose.prod.yml   # For production deployment
+├── docker-compose.yml        # Local development (includes all services)
+├── docker-compose.prod.yml   # Production deployment (app only)
 ├── Dockerfile                # App container image
-├── .env.template             # Template for environment variables
+├── .env.template             # Environment variables template
+├── requirements.txt          # Python dependencies
 └── README.md                 # This file
 ```

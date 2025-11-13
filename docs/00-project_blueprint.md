@@ -1,7 +1,28 @@
 # QuickCart Telegram Bot – Functional & Technical Blueprint
 
-> **⚠️ CURRENT STATUS: IN DEVELOPMENT**
-> This document describes the **intended functionality** of the QuickCart bot. The current implementation is a foundational skeleton and many features described here are **not yet complete**. This blueprint serves as the architectural goal for development.
+> **📋 IMPLEMENTATION STATUS**
+> 
+> **Completed:**
+> - ✅ Database schema with migrations (PostgreSQL main + audit)
+> - ✅ Redis session management with in-memory fallback
+> - ✅ Flexible navigation system (no ConversationHandler)
+> - ✅ User onboarding and registration
+> - ✅ Main menu and product browsing interfaces
+> - ✅ Account management UI
+> - ✅ Message forwarding to admins
+> - ✅ Reply and inline keyboard systems
+> - ✅ Docker deployment configuration
+> 
+> **In Development:**
+> - 🔧 Order processing and stock reservation
+> - 🔧 Pakasir QRIS payment integration
+> - 🔧 Payment expiry handling
+> - 🔧 Product delivery system
+> - 🔧 Admin command implementations
+> - 🔧 Deposit flow completion
+> - 🔧 Voucher system activation
+> 
+> This document serves as the **functional blueprint** for the complete system.
 
 > **Note:**
 > All inline/reply keyboard buttons must be in Bahasa Indonesia.
@@ -74,8 +95,8 @@ QuickCart is a Telegram auto-order bot for digital products (e.g., tutorials, pr
     - If paid, bot sends product content.
   - **[SALDO]**: Confirms/cancels payment with account balance.
 
-- **Flexible Navigation:**
-  Users can click any button at any time. The bot must context-switch to the new flow, discarding previous state if needed. No need to cancel before starting a new operation.
+- **Flexible Navigation:** ✅ **IMPLEMENTED**
+  Users can click any button at any time. The bot context-switches to the new flow using Redis session state atomically. No need to cancel before starting a new operation. Session state is managed in `src/core/redis.py` and handlers check/update state flexibly.
 
 ---
 
