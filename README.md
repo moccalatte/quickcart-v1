@@ -1,30 +1,24 @@
 # QuickCart - Telegram Auto-Order Bot 🤖
 
-> **⚠️ Project Status: In Development**
-> This repository contains the foundational code for QuickCart. While the documentation describes the full vision, the core features are **currently under active development** and the bot is **not yet functional for production use**. This is a great time to contribute, but please be aware of its pre-release status.
+> **Automated digital product sales bot for Telegram with QRIS payment integration.**
 
-> **Automated digital product sales bot for Telegram with QRIS payment integration**
-
-QuickCart is a complete auto-order bot system for selling digital products (courses, accounts, vouchers, etc.) through Telegram. Customers can browse, order, and receive products automatically after payment - all without manual intervention.
+QuickCart is a complete auto-order bot system for selling digital products (courses, accounts, vouchers, etc.) through Telegram. Customers can browse, order, and receive products automatically after payment—all without manual intervention.
 
 **Repository:** https://github.com/moccalatte/quickcart-v1  
-**Built with python-telegram-bot v22.5** - Latest version with full async/await support  
-📚 Library: https://github.com/python-telegram-bot/python-telegram-bot
+**Built with:** `python-telegram-bot`, `FastAPI`, `SQLAlchemy`, and `Docker`.
 
 ---
 
 ## ✨ Features
 
-- 🛍️ **Product Catalog** - Browse products by category, best sellers, or view all
-- 💳 **QRIS Payment** - Automatic payment via Pakasir gateway (0.7% + Rp310 fee)
-- ⏱️ **10-Minute Expiry** - Payments automatically expire if not completed
-- 👥 **Multi-Tier Users** - Customer, Reseller, and Admin roles
-- 🎫 **Voucher System** - Create and distribute discount codes
-- 📊 **Audit Logging** - Complete transaction history for compliance
-- 🔒 **Secure** - Separate audit database, encrypted sensitive data
-- 🌐 **Flexible Deployment** - Works on any server (VPS, cloud, local)
-- 🐳 **Docker Ready** - One-command deployment with Docker Compose
-- 🗄️ **External Database Support** - Deploy PostgreSQL and Redis on separate VPS servers
+- 🛍️ **Product Catalog**: Browse products by category, best sellers, or view all.
+- 💳 **QRIS Payment**: Automatic payment via Pakasir gateway.
+- ⏱️ **Payment Expiry**: Payments automatically expire if not completed.
+- 👥 **User Roles**: Customer, Reseller, and Admin roles.
+- 🎫 **Voucher System**: Create and distribute discount codes.
+- 📊 **Audit Logging**: Complete transaction history for compliance in a separate database.
+- 🐳 **Docker Ready**: Simple, fast deployment for local development and production.
+- 🗄️ **In-Memory Fallback**: The system can function without Redis, making it lightweight for smaller setups.
 
 ---
 
@@ -32,308 +26,139 @@ QuickCart is a complete auto-order bot system for selling digital products (cour
 
 Before you start, make sure you have:
 
-1. **Docker & Docker Compose** installed ([Get Docker](https://docs.docker.com/get-docker/))
-2. **Telegram Bot Token** from [@BotFather](https://t.me/BotFather)
-3. **Your Telegram User ID** from [@userinfobot](https://t.me/userinfobot)
-4. **Pakasir Account** - Sign up at [pakasir.com](https://pakasir.com) for payment gateway
-
-That's it! No programming knowledge needed. Docker handles everything.
-
-**🎯 Complete beginner?** Follow the step-by-step guide below - we'll get you running in 10 minutes!
-
-**🚀 Production Deployment:** Need to use external PostgreSQL/Redis? Just change `DATABASE_URL` in `.env` - same docker-compose.yml works for everything!
+1.  **Docker & Docker Compose** installed ([Get Docker](https://docs.docker.com/get-docker/)).
+2.  **Git** installed.
+3.  A **Telegram Bot Token** from [@BotFather](https://t.me/BotFather).
+4.  Your personal **Telegram User ID** from a bot like [@userinfobot](https://t.me/userinfobot).
+5.  A **Pakasir Account** for the payment gateway.
 
 ---
 
-## 🚀 Quick Start - Complete Beginner Guide
+## 🚀 Getting Started (Local Development)
 
-### Step 1: Get Your Credentials (5 minutes)
+This setup is recommended for testing, development, and small-scale use. It runs the application, databases, and Redis in Docker containers on your local machine.
 
-Before installing, collect these 4 required credentials:
-
-#### 1.1. Create Telegram Bot
-1. Open Telegram and search for `@BotFather`
-2. Send `/newbot` command
-3. Follow instructions to create your bot
-4. **Save the bot token** (looks like: `1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ`)
-
-#### 1.2. Get Your Telegram User ID
-1. Open Telegram and search for `@userinfobot`
-2. Send `/start` command
-3. **Save your User ID** (looks like: `123456789`)
-
-#### 1.3. Create Pakasir Account
-1. Go to [pakasir.com](https://pakasir.com) and sign up
-2. Create a new project in dashboard
-3. **Save your API Key** (from project settings)
-4. **Save your Project Slug** (from project URL/settings)
-
-✅ Got all 4 credentials? Great! Let's install QuickCart.
-
----
-
-### Step 2: Install QuickCart (5 minutes)
-
-#### Option A: Automatic Setup (Recommended for Beginners)
+### 1. Clone the Repository
 
 ```bash
-# 1. Download QuickCart
 git clone https://github.com/moccalatte/quickcart-v1.git
 cd quickcart-v1
-
-# 2. Run setup wizard
-chmod +x setup.sh
-./setup.sh
 ```
 
-The wizard will ask for:
-- ✓ Telegram Bot Token (from Step 1.1)
-- ✓ Your Telegram User ID (from Step 1.2)
-- ✓ Pakasir API Key (from Step 1.3)
-- ✓ Pakasir Project Slug (from Step 1.3)
+### 2. Configure Your Environment
 
-Then it automatically:
-- Generates security keys
-- Creates configuration file
-- Starts all services
-- Runs database migrations
-
-**Done!** Skip to Step 3 to test your bot.
-
----
-
-#### Option B: Manual Setup (For Advanced Users)
+Copy the environment variable template and fill in your credentials.
 
 ```bash
-# 1. Download QuickCart
-git clone https://github.com/moccalatte/quickcart-v1.git
-cd quickcart-v1
-
-# 2. Create configuration file
+# 1. Copy the template
 cp .env.template .env
 
-# 3. Edit .env file - fill in REQUIRED values:
-nano .env  # or use: vim .env, or open with any text editor
+# 2. Edit the .env file with a text editor (like nano, vim, or VS Code)
+nano .env
+```
 
-# Paste these values (replace with your actual credentials):
-TELEGRAM_BOT_TOKEN=your_token_from_step_1.1
-ADMIN_USER_IDS=your_user_id_from_step_1.2
-PAKASIR_API_KEY=your_api_key_from_step_1.3
-PAKASIR_PROJECT_SLUG=your_slug_from_step_1.3
+Inside the `.env` file, you **must** fill in these required values:
+- `TELEGRAM_BOT_TOKEN`
+- `ADMIN_USER_IDS`
+- `PAKASIR_API_KEY`
+- `PAKASIR_PROJECT_SLUG`
+- `SECRET_KEY` (generate a random string)
+- `ENCRYPTION_KEY` (generate a random string)
 
-# Generate security keys (run this command twice, copy each result):
-python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+The database and Redis variables are already pre-configured for the local Docker setup.
 
-# Paste the generated keys:
-SECRET_KEY=paste_first_generated_key_here
-ENCRYPTION_KEY=paste_second_generated_key_here
+### 3. Launch the Application
 
-# Save and close the file (Ctrl+X, then Y, then Enter in nano)
+Build and run the Docker containers in detached mode.
 
-# 4. Start QuickCart
-docker compose up -d
+```bash
+docker compose up -d --build
+```
 
-# 5. View logs to confirm it's running
+### 4. Check the Logs
+
+Verify that the application and all services started correctly.
+
+```bash
 docker compose logs -f app
 ```
 
-You should see: `✅ Starting QuickCart Bot...` and `✅ Bot started successfully!`
-
-Press `Ctrl+C` to stop viewing logs (bot keeps running in background).
+You should see a message indicating the bot has started successfully. You can now go to Telegram and start a conversation with your bot.
 
 ---
 
-### Step 3: Test Your Bot (2 minutes)
+## 🌐 Production Deployment
 
-1. **Check services are running:**
-   ```bash
-   docker compose ps
-   ```
-   *You should see all services (`app`, `db`, `redis`) in the `Up` state.*
+This setup is designed for deploying the application on a server, connecting to **external, managed databases and Redis**.
 
-2. **Test the bot:**
-   - Open Telegram and search for your bot.
-   - Send the `/start` command.
-   - **Expected Result:** You should see a simple welcome message like `Welcome <Your Name>! This is a placeholder. Full implementation coming soon.` This confirms the bot is running, but the full features are not yet implemented.
+### 1. Setup Your Server
 
----
+Clone the repository and create the `.env` file as described in the local setup, but configure it for production:
 
-## 🌐 Production Deployment (Optional - For Advanced Users)
+- Set `ENVIRONMENT=production` and `DEBUG=False`.
+- Set `DATABASE_URL` and `AUDIT_DATABASE_URL` to point to your external PostgreSQL servers.
+- Set `REDIS_URL` to point to your external Redis server.
 
-**Running on a VPS?** Using external PostgreSQL/Redis? No problem!
+### 2. Launch with Production Compose File
 
-Same `docker-compose.yml` works for everything - just change database URLs in `.env`:
+Use the `docker-compose.prod.yml` file, which only runs the application container and expects all other services to be external.
 
 ```bash
-# In your .env file, change from:
-DATABASE_URL=postgresql+asyncpg://quickcart:quickcart123@db:5432/quickcart
-
-# To your external database server:
-DATABASE_URL=postgresql+asyncpg://quickcart:password@YOUR_DB_IP:5432/quickcart
-
-# Same for Redis (or leave empty to disable):
-REDIS_URL=redis://:password@YOUR_REDIS_IP:6379/0
-
-# Set to production mode:
-ENVIRONMENT=production
-DEBUG=false
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Then run the same command:
-```bash
-docker compose up -d
-```
-
-**📚 Complete Production Guide:** [docs/DEPLOYMENT_EXTERNAL_DB.md](docs/DEPLOYMENT_EXTERNAL_DB.md)
-
-### Architecture
-
-```
-┌─────────────────────┐
-│   Application VPS   │
-│   (QuickCart App)   │
-└──────────┬──────────┘
-           │
-           ├─────────────────┐
-           │                 │
-           ▼                 ▼
-┌──────────────────┐  ┌──────────────────┐
-│ PostgreSQL VPS   │  │   Redis VPS      │
-│ - Main DB        │  │   (Optional)     │
-│ - Audit DB       │  │   - Caching      │
-└──────────────────┘  └──────────────────┘
-```
-
-### Key Configuration Changes
-
-When deploying with external databases, the main differences are:
-
-1. **Database URLs:** Point to your PostgreSQL VPS instead of `localhost` or `db`
-2. **Redis URL:** Point to your Redis VPS (or set to `None` if not using Redis)
-3. **Network:** Configure firewall rules to allow app server to connect to database servers
-4. **Security:** Use private network between servers when possible
-
-**Example `.env` for external databases:**
-```bash
-# PostgreSQL on separate server
-DATABASE_URL=postgresql+asyncpg://quickcart:securepass@192.168.1.100:5432/quickcart
-AUDIT_DATABASE_URL=postgresql+asyncpg://quickcart:securepass@192.168.1.100:5432/quickcart_audit
-
-# Redis on separate server (optional)
-REDIS_URL=redis://:redispass@192.168.1.101:6379/0
-
-# Or use hostnames
-DATABASE_URL=postgresql+asyncpg://quickcart:pass@db.example.com:5432/quickcart
-REDIS_URL=redis://:pass@redis.example.com:6379/0
-   # All should show "Up"
-   ```
-
-2. **Test in Telegram:**
-   - Open Telegram
-   - Search for your bot
-   - Send `/start`
-   - You should see welcome message!
-
-🎉 **Success!** Bot is running.
-
-**If anything fails:** See `INSTALL.md` for detailed troubleshooting!
+This setup ensures your application container is lightweight and securely connects to your production infrastructure.
 
 ---
 
-## 📱 Using the Bot
+## ⚙️ Configuration
 
-### For Customers
+All configuration is managed through environment variables listed in `.env.template`. The application uses two separate Docker Compose files:
 
-1. **Start the bot**: `/start`
-2. **Browse products**: Click `[LIST PRODUK]` or use category buttons
-3. **Order**: Send product number (1-24), select quantity, choose payment
-4. **Pay**: Scan QRIS code or use account balance
-5. **Receive**: Product delivered automatically after payment confirmed
+- `docker-compose.yml`: For **local development**. Includes `app`, `db`, `audit_db`, and `redis` services. Mounts the `src` directory for live-reloading.
+- `docker-compose.prod.yml`: For **production**. Includes only the `app` service and is designed to connect to external databases and Redis.
 
-### For Admins
-
-All admin commands work directly in Telegram:
-
-```
-/add 1|Netflix Premium|Streaming|50000|Akun Netflix 1 bulan
-/addstock 1|email:password
-/editproduct 1|name|New Product Name
-/stock - View all product stock
-/orders - View recent orders
-/info 123456789 - View user info
-/transfer 123456789|50000 - Add balance to user
-/broadcast - Send message to all users
-/giveaway - Create voucher codes
-```
-
-**📖 Full command reference:** [docs/00-project_blueprint.md](docs/00-project_blueprint.md) or [docs/03-prd.md](docs/03-prd.md)
+See the `.env.template` file for a complete list of all available configuration variables and their descriptions.
 
 ---
 
-## 🎯 How It Works
+## 🛠️ Useful Docker Commands
 
-```
-┌─────────────┐
-│   Customer  │ Sends /start
-│  (Telegram) │ ──────────────┐
-└─────────────┘               │
-                              ▼
-                    ┌──────────────────┐
-                    │  QuickCart Bot   │
-                    │   (This App)     │
-                    └──────────────────┘
-                              │
-                    ┌─────────┴─────────┐
-                    │                   │
-                    ▼                   ▼
-            ┌──────────────┐    ┌──────────────┐
-            │  PostgreSQL  │    │   Pakasir    │
-            │  (Products,  │    │   (Payment   │
-            │   Orders)    │    │   Gateway)   │
-            └──────────────┘    └──────────────┘
-```
+All commands should be run from the project's root directory.
 
-1. Customer browses products via Telegram bot
-2. Bot generates QRIS payment via Pakasir API
-3. Customer pays using any Indonesian e-wallet
-4. Pakasir webhook notifies bot of payment
-5. Bot delivers digital product automatically
-6. All transactions logged to audit database
-
----
-
-## 🛠️ Management Commands
-
+#### View Logs
 ```bash
-# View logs
-docker compose logs -f app
+# For local development
+docker compose logs -f
 
-# Restart bot (after code changes)
-docker compose restart app
+# For production
+docker compose -f docker-compose.prod.yml logs -f
+```
 
-# Stop all services
+#### Stop Services
+```bash
+# For local development
 docker compose down
 
-# Stop and remove all data (CAUTION!)
+# For production
+docker compose -f docker-compose.prod.yml down
+```
+
+#### Stop Services and Remove Data Volumes
+**Warning:** This will delete all your local database data.
+```bash
 docker compose down -v
+```
 
-# Enter database
-docker compose exec db psql -U quickcart -d quickcart
-
-# Enter bot container
-docker compose exec app sh
-
-# Run database migrations manually
+#### Run Database Migrations Manually
+The entrypoint script runs this automatically, but you can run it manually if needed.
+```bash
 docker compose exec app alembic upgrade head
+```
 
-# View database tables
-docker compose exec db psql -U quickcart -d quickcart -c "\dt"
-
-# Or use Makefile shortcuts:
-make logs      # View logs
-make restart   # Restart bot
-make db        # Open database
-make help      # See all commands
+#### Access the Main Database
+```bash
+docker compose exec db psql -U quickcart -d quickcart
 ```
 
 ---
@@ -347,641 +172,15 @@ quickcart-v1/
 │   ├── models/               # Database models
 │   ├── repositories/         # Database operations
 │   ├── services/             # Business logic
-│   ├── handlers/             # Telegram command handlers
+│   ├── bot/                  # Telegram bot application and handlers
 │   └── integrations/         # Pakasir API client
 │
 ├── migrations/               # Database migrations
-│   └── versions/             # Migration files
-│
-├── docs/                     # Complete documentation (20 files)
-│   ├── 01-dev_protocol.md    # Development guidelines
-│   ├── 03-prd.md             # Product requirements
-│   ├── 04-uiux_flow.md       # User flows
-│   ├── 06-data_schema.md     # Database schema
-│   └── ...                   # 16 more docs
-│
+├── docs/                     # Project documentation
 ├── tests/                    # Unit & integration tests
-├── docker-compose.yml        # ONE docker-compose for all scenarios
+├── docker-compose.yml        # For local development
+├── docker-compose.prod.yml   # For production deployment
 ├── Dockerfile                # App container image
-├── .env                      # Your configuration (create from .env.template)
-├── requirements.txt          # Python dependencies
+├── .env.template             # Template for environment variables
 └── README.md                 # This file
 ```
-
----
-
-## ⚙️ Configuration Reference
-
-### Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `TELEGRAM_BOT_TOKEN` | ✅ Yes | - | Bot token from @BotFather |
-| `ADMIN_USER_IDS` | ✅ Yes | - | Comma-separated admin Telegram IDs |
-| `PAKASIR_API_KEY` | ✅ Yes | - | Pakasir API key |
-| `PAKASIR_PROJECT_SLUG` | ✅ Yes | - | Pakasir project slug |
-| `SECRET_KEY` | ✅ Yes | - | Secret for encryption |
-| `ENCRYPTION_KEY` | ✅ Yes | - | Key for sensitive data |
-| `DATABASE_URL` | ⚪ No | Auto | PostgreSQL connection string |
-| `REDIS_URL` | ⚪ No | Auto | Redis connection (optional) |
-| `ENVIRONMENT` | ⚪ No | `development` | Environment mode |
-| `DEBUG` | ⚪ No | `true` | Debug mode |
-| `STORE_NAME` | ⚪ No | `QuickCart Store` | Your store name |
-
-**See `.env.template` for complete list with descriptions.**
-
-### Database Configuration
-
-QuickCart uses **two PostgreSQL databases**:
-
-1. **Main Database** (`quickcart`) - Stores products, orders, users
-2. **Audit Database** (`quickcart_audit`) - Permanent compliance logs
-
-Both are created automatically on first run.
-
-### Redis (Optional)
-
-Redis is used for:
-- User session management
-- Product stock caching
-- Rate limiting
-- Payment expiry queue
-
-**If Redis is not available**, the system automatically falls back to **in-memory storage**. This works fine for:
-- Testing and development
-- Low-traffic stores (< 100 concurrent users)
-- Single-server deployments
-
-For production with high traffic, Redis is recommended.
-
----
-
-## 🔧 Troubleshooting
-
-### Bot doesn't respond to /start
-
-**Check logs:**
-```bash
-docker-compose logs -f app
-```
-
-**Common issues:**
-- Wrong `TELEGRAM_BOT_TOKEN` - Verify token with @BotFather
-- Bot not started - Send any message to wake it up
-- Webhook conflicts - Use `/deleteWebhook` via @BotFather
-
-### Database connection error
-
-**Solution:**
-```bash
-# Restart database
-docker-compose restart db
-
-# Wait for it to be healthy
-docker-compose ps
-
-# Re-run migrations
-docker-compose exec app alembic upgrade head
-```
-
-### Payment webhook not working
-
-**Check:**
-1. `PAKASIR_WEBHOOK_SECRET` matches Pakasir dashboard
-2. Your server is accessible from internet (for webhooks)
-3. Webhook URL configured in Pakasir: `https://your-domain.com/webhooks/pakasir`
-
-**For local testing:**
-- Use ngrok: `ngrok http 8000`
-- Set webhook URL to ngrok URL
-
-### Redis connection error
-
-Redis is **optional**. If you see:
-```
-⚠ Redis connection failed
-✓ Falling back to in-memory storage
-```
-
-This is **normal** and the bot will work fine. To disable Redis completely:
-
-**Option 1:** Comment out Redis in `docker-compose.yml`:
-```yaml
-#  redis:
-#    image: redis:7-alpine
-#    ...
-```
-
-**Option 2:** Remove `REDIS_URL` from `.env`
-
-### Reset everything (clean slate)
-
-```bash
-# CAUTION: This deletes all data!
-docker-compose down -v
-docker-compose up -d
-```
-
----
-
-## 📊 Database Schema
-
-### Main Tables
-
-- **users** - Customer, reseller, and admin accounts
-- **products** - Product catalog (ID 1-24)
-- **product_stocks** - Individual stock items (digital content)
-- **orders** - Order records with payment info
-- **order_items** - Products in each order
-- **vouchers** - Discount codes
-- **voucher_usage_cooldown** - Prevent voucher abuse (5-min cooldown)
-
-### Audit Tables
-
-- **audit_logs** - Master audit log (permanent)
-- **payment_audit_logs** - Payment transactions (permanent)
-- **admin_action_audit** - Admin commands (permanent)
-
-**View complete schema:** [docs/06-data_schema.md](docs/06-data_schema.md)
-
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-docker-compose exec app pytest
-
-# Run with coverage
-docker-compose exec app pytest --cov=src --cov-report=html
-
-# Run specific test file
-docker-compose exec app pytest tests/test_orders.py
-
-# View coverage report
-open htmlcov/index.html
-```
-
----
-
-## 📚 Documentation
-
-Complete documentation available in `docs/` folder:
-
-1. **[01-dev_protocol.md](docs/01-dev_protocol.md)** - Development guidelines
-2. **[03-prd.md](docs/03-prd.md)** - Product requirements & features
-3. **[04-uiux_flow.md](docs/04-uiux_flow.md)** - User flows & UI screens
-4. **[06-data_schema.md](docs/06-data_schema.md)** - Database schema
-5. **[08-integration_plan.md](docs/08-integration_plan.md)** - Pakasir integration
-6. **[09-security_manifest.md](docs/09-security_manifest.md)** - Security best practices
-7. **[14-build_plan.md](docs/14-build_plan.md)** - Build & deployment guide
-8. ... and 13 more detailed docs
-
----
-
-## 🌐 Deployment Options
-
-### Option 1: Docker Compose (Recommended for Beginners)
-
-Already covered in Quick Start above. Works on:
-- Any VPS (DigitalOcean, Linode, Vultr, etc.)
-- AWS EC2, Google Cloud, Azure
-- Your own server
-- Even your laptop (for testing)
-
-### Option 2: Manual Deployment
-
-```bash
-# Install Python 3.11+
-python3 --version
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set up PostgreSQL and Redis
-# (Install separately)
-
-# Run migrations
-alembic upgrade head
-
-# Start bot
-uvicorn src.main:app --host 0.0.0.0 --port 8000
-```
-
-### Option 3: DockerHub (Coming Soon)
-
-We'll publish a ready-to-use Docker image:
-
-```bash
-docker pull quickcart/bot:latest
-docker run -d --env-file .env quickcart/bot:latest
-```
-
----
-
-## 🔐 Security Best Practices
-
-1. **Never commit `.env` file** - It contains secrets
-2. **Use strong SECRET_KEY and ENCRYPTION_KEY** - Generate random 32-char strings
-3. **Keep ADMIN_USER_IDS accurate** - Only trusted admins
-4. **Enable HTTPS** - Use reverse proxy (nginx) with SSL
-5. **Regular backups** - Backup PostgreSQL databases daily
-6. **Monitor logs** - Check for suspicious activity
-7. **Update regularly** - Pull latest updates from repository
-
----
-
-## 🤝 Support & Community
-
-- **Issues**: [GitHub Issues](https://github.com/yourrepo/issues)
-- **Documentation**: See `docs/` folder (20 detailed guides)
-- **Telegram**: Join our support channel (link here)
-
----
-
-## 📝 License
-
-MIT License - See [LICENSE](LICENSE) file
-
----
-
-## 🙏 Credits
-
-Built with:
-- **Python 3.11** - Core language
-- **FastAPI** - Web framework
-- **SQLAlchemy 2.0** - Database ORM (async)
-- **python-telegram-bot v22.5** - Telegram Bot API (latest)
-- **PostgreSQL 15** - Database
-- **Redis 7** - Caching (optional)
-- **Docker** - Containerization
-- **Pakasir** - QRIS payment gateway
-- **Alembic** - Database migrations
-
----
-
-## 📈 Roadmap
-
-- [x] Core order flow
-- [x] QRIS payment integration
-- [x] Admin commands
-- [x] Voucher system
-- [x] Audit logging
-- [ ] WhatsApp notifications
-- [ ] Product images
-- [ ] Analytics dashboard
-- [ ] Multiple payment gateways
-- [ ] Subscription products
-
----
-
-## 💡 Tips for Success
-
-1. **Read INSTALL.md first** - Complete guide from zero to running
-2. **Start small** - Add 1-2 products first, test thoroughly
-3. **Test payments** - Use small amounts initially
-4. **Set up webhooks** - Critical for automatic order fulfillment
-5. **Monitor logs** - First few days, check logs regularly: `docker compose logs -f app`
-6. **Backup database** - Run `make backup` before major changes
-7. **Read the docs** - Especially [docs/00-project_blueprint.md](docs/00-project_blueprint.md), [docs/03-prd.md](docs/03-prd.md), and [docs/TESTING.md](docs/TESTING.md)
-
----
-
-## 🔧 Troubleshooting
-
-### Problem: Docker not installed or command not found
-
-**Symptoms:**
-```bash
-bash: docker: command not found
-```
-
-**Solution:**
-```bash
-# Linux (Ubuntu/Debian)
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
-# Log out and log back in
-
-# macOS / Windows
-# Download Docker Desktop from https://www.docker.com/get-started
-```
-
----
-
-### Problem: Permission denied when running docker
-
-**Symptoms:**
-```bash
-permission denied while trying to connect to the Docker daemon socket
-```
-
-**Solution:**
-```bash
-# Add your user to docker group
-sudo usermod -aG docker $USER
-
-# Log out and log back in, or run:
-newgrp docker
-
-# Test:
-docker ps
-```
-
----
-
-### Problem: Bot doesn't respond to /start
-
-**Symptoms:**
-- Send `/start` to bot in Telegram
-- No response
-
-**Solution:**
-
-1. **Check if bot is running:**
-   ```bash
-   docker compose ps
-   # All services should show "Up"
-   ```
-
-2. **Check logs for errors:**
-   ```bash
-   docker compose logs -f app
-   # Look for error messages
-   ```
-
-3. **Common causes:**
-   - ✗ Wrong bot token → Check `TELEGRAM_BOT_TOKEN` in `.env`
-   - ✗ Bot already connected to webhook → Clear webhook:
-     ```bash
-     curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook"
-     ```
-   - ✗ Database not ready → Wait 30 seconds after starting, then try again
-   - ✗ Admin ID wrong → Verify `ADMIN_USER_IDS` in `.env` matches your Telegram User ID
-
-4. **Restart bot:**
-   ```bash
-   docker compose restart app
-   docker compose logs -f app
-   ```
-
----
-
-### Problem: Database connection failed
-
-**Symptoms:**
-```
-sqlalchemy.exc.OperationalError: could not connect to server
-```
-
-**Solution:**
-
-1. **Check database is running:**
-   ```bash
-   docker compose ps db
-   # Should show "Up"
-   ```
-
-2. **Check database logs:**
-   ```bash
-   docker compose logs db
-   # Look for "database system is ready to accept connections"
-   ```
-
-3. **Restart database:**
-   ```bash
-   docker compose restart db
-   # Wait 10 seconds
-   docker compose restart app
-   ```
-
-4. **If using external database:**
-   - Verify `DATABASE_URL` in `.env` is correct
-   - Test connection from app server:
-     ```bash
-     docker compose exec app python -c "from sqlalchemy import create_engine; engine = create_engine('YOUR_DATABASE_URL'); engine.connect()"
-     ```
-
----
-
-### Problem: Payment QR code not showing
-
-**Symptoms:**
-- Order created but no QR code displayed
-- Payment fails silently
-
-**Solution:**
-
-1. **Check Pakasir credentials:**
-   - Verify `PAKASIR_API_KEY` in `.env`
-   - Verify `PAKASIR_PROJECT_SLUG` in `.env`
-   - Test in Pakasir dashboard that project is active
-
-2. **Check logs for Pakasir errors:**
-   ```bash
-   docker compose logs -f app | grep -i pakasir
-   ```
-
-3. **Test Pakasir connection manually:**
-   ```bash
-   docker compose exec app python -c "
-   from src.integrations.pakasir import pakasir_client
-   import asyncio
-   result = asyncio.run(pakasir_client.check_health())
-   print('Pakasir OK' if result else 'Pakasir ERROR')
-   "
-   ```
-
----
-
-### Problem: Webhook not receiving payments
-
-**Symptoms:**
-- Payment successful in Pakasir
-- Bot doesn't deliver product
-- No webhook notification received
-
-**Solution:**
-
-1. **Check webhook is configured in Pakasir dashboard:**
-   - URL should be: `https://yourdomain.com/webhooks/pakasir`
-   - Must be HTTPS (not HTTP)
-   - Must be publicly accessible
-
-2. **Test webhook endpoint:**
-   ```bash
-   curl -X POST https://yourdomain.com/webhooks/pakasir \
-     -H "Content-Type: application/json" \
-     -d '{"order_id":"TEST123","status":"completed","amount":10000}'
-   
-   # Should return: {"status":"ok"}
-   ```
-
-3. **Check webhook logs:**
-   ```bash
-   docker compose logs -f app | grep webhook
-   ```
-
-4. **For local testing, use ngrok:**
-   ```bash
-   # Terminal 1: Start bot
-   docker compose up -d
-   
-   # Terminal 2: Start ngrok
-   ngrok http 8000
-   
-   # Use ngrok URL in Pakasir dashboard:
-   # https://abc123.ngrok.io/webhooks/pakasir
-   ```
-
----
-
-### Problem: Port already in use
-
-**Symptoms:**
-```
-Error starting userland proxy: listen tcp 0.0.0.0:8000: bind: address already in use
-```
-
-**Solution:**
-
-1. **Find what's using the port:**
-   ```bash
-   # Linux/Mac
-   lsof -i :8000
-   
-   # Windows
-   netstat -ano | findstr :8000
-   ```
-
-2. **Kill the process or change port:**
-   ```bash
-   # Option 1: Kill the process
-   kill -9 <PID>
-   
-   # Option 2: Change port in docker-compose.yml
-   # Change "8000:8000" to "8001:8000"
-   ```
-
----
-
-### Problem: Migrations fail
-
-**Symptoms:**
-```
-alembic.util.exc.CommandError: Can't locate revision
-```
-
-**Solution:**
-
-1. **Reset migrations (WARNING: destroys data):**
-   ```bash
-   docker compose down -v  # Remove volumes
-   docker compose up -d
-   ```
-
-2. **Or manually run migrations:**
-   ```bash
-   docker compose exec app alembic upgrade head
-   ```
-
-3. **Check migration files exist:**
-   ```bash
-   ls -la migrations/versions/
-   # Should show at least 2 migration files
-   ```
-
----
-
-### Problem: Out of disk space
-
-**Symptoms:**
-```
-no space left on device
-```
-
-**Solution:**
-
-1. **Clean up Docker:**
-   ```bash
-   docker system prune -a --volumes
-   # WARNING: This removes all unused containers, images, and volumes
-   ```
-
-2. **Check disk usage:**
-   ```bash
-   df -h
-   docker system df
-   ```
-
----
-
-### Still having issues?
-
-1. **Check logs in detail:**
-   ```bash
-   docker compose logs app | less
-   ```
-
-2. **Verify all environment variables:**
-   ```bash
-   docker compose exec app env | grep -E "(TELEGRAM|PAKASIR|DATABASE)"
-   ```
-
-3. **Run verification script:**
-   ```bash
-   python3 scripts/verify_implementation.py
-   ```
-
-4. **Join our community:**
-   - Create an issue: https://github.com/moccalatte/quickcart-v1/issues
-   - Check existing issues for solutions
-
----
-
-## ❓ FAQ
-
-**Q: Do I need programming skills?**  
-A: No! If you can copy files and edit a text file, you can deploy this bot. Read `INSTALL.md` for complete beginner guide.
-
-**Q: Does this work outside Indonesia?**  
-A: Yes, but you'll need to replace Pakasir with your local payment gateway.
-
-**Q: Can I customize the UI?**  
-A: Yes! Edit language files and button layouts in `src/handlers/` folder (when implemented).
-
-**Q: Is Redis required?**  
-A: No, it's optional. The bot works fine without Redis using in-memory storage.
-
-**Q: What Telegram library is used?**  
-A: python-telegram-bot v22.5 (latest version). Install: `pip install python-telegram-bot --upgrade`
-
-**Q: Can I sell physical products?**  
-A: This bot is designed for digital products (instant delivery). For physical products, you'd need to modify the fulfillment logic.
-
-**Q: How do I update the bot?**  
-A: `git pull` and `docker compose up -d --build` or just run `make update`
-
-**Q: Where are my databases stored?**  
-A: In Docker volumes. Run `docker volume ls` to see them.
-
-**Q: Bot doesn't respond to /start?**  
-A: Check logs with `docker compose logs -f app`. Common issues: wrong bot token, database not ready (wait 30s), or webhook conflicts.
-
-**Q: How do I run the CI/CD pipeline?**
-A: The CI/CD pipeline is automatically triggered on push and pull requests to the main and develop branches.
-
----
-
-**Ready to launch your digital store?**
-
-- **Absolute beginner?** → Read `INSTALL.md` (complete step-by-step guide)
-- **Have Docker experience?** → Follow Quick Start above
-- **Need testing guide?** → Read `TESTING.md` (50+ test cases)
-- **Want all details?** → See `docs/` folder (20 comprehensive guides)
-
-**You'll be selling in 5-10 minutes! 🚀**

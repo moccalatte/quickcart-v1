@@ -1,0 +1,53 @@
+# QuickCart Docker Compose Configuration
+# ==========================================
+# This file is designed for deployments using external PostgreSQL and Redis.
+# For local development with all-in-one containers, please see the documentation.
+#
+# SETUP (3 steps):
+#   1. cp .env.template .env
+#   2. Edit .env with your bot token and ALL external service URLs (PostgreSQL, Redis)
+#   3. docker compose up -d --build
+#
+# See README.md and .env.template for more details.
+
+services:
+  # QuickCart Bot Application
+  app:
+    build: .
+    container_name: quickcart_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # The `src` directory is not mounted to ensure the container is immutable.
+    # Migrations are mounted to allow running `alembic` commands easily if needed.
+    volumes:
+      - ./migrations:/app/migrations
+    command: >
+      sh -c "
+        echo '🔄 Waiting for database to be available...' &&
+        sleep 5 &&
+        echo '🔄 Running database migrations...' &&
+        alembic upgrade head &&
+        echo '✅ Starting QuickCart Bot...' &&
+        python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+      "
+
+# ==========================================
+# USAGE EXAMPLES
+# ==========================================
+#
+# Start the application:
+#   docker compose up -d
+#
+# View logs:
+#   docker compose logs -f app
+#
+# Stop the application:
+#   docker compose down
+#
+# Run migrations manually:
+#   docker compose exec app alembic upgrade head
+#
+# ==========================================

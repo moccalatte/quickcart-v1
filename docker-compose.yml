@@ -1,53 +1,97 @@
-# QuickCart Docker Compose Configuration
+# QuickCart Local Development Docker Compose
 # ==========================================
-# This file is designed for deployments using external PostgreSQL and Redis.
-# For local development with all-in-one containers, please see the documentation.
+# This file is for local development and includes all necessary services.
+# It mounts the source code for live-reloading.
 #
 # SETUP (3 steps):
 #   1. cp .env.template .env
-#   2. Edit .env with your bot token and ALL external service URLs (PostgreSQL, Redis)
+#   2. Edit .env with your bot token (you can leave other variables as is)
 #   3. docker compose up -d --build
 #
-# See README.md and .env.template for more details.
+# See README.md for more details.
+
+version: "3.8"
 
 services:
   # QuickCart Bot Application
   app:
     build: .
-    container_name: quickcart_app
+    container_name: quickcart_app_dev
     restart: unless-stopped
     ports:
       - "8000:8000"
     env_file:
       - .env
-    # The `src` directory is not mounted to ensure the container is immutable.
-    # Migrations are mounted to allow running `alembic` commands easily if needed.
     volumes:
+      # Mount source code for live-reloading
+      - ./src:/app/src
       - ./migrations:/app/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+      audit_db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     command: >
       sh -c "
-        echo '🔄 Waiting for database to be available...' &&
-        sleep 5 &&
-        echo '🔄 Running database migrations...' &&
+        echo '🔄 Waiting for databases to be healthy...' &&
         alembic upgrade head &&
-        echo '✅ Starting QuickCart Bot...' &&
-        python -m uvicorn src.main:app --host 0.0.0.0 --port 8000
+        echo '✅ Starting QuickCart Bot with live-reload...' &&
+        python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
       "
 
-# ==========================================
-# USAGE EXAMPLES
-# ==========================================
-#
-# Start the application:
-#   docker compose up -d
-#
-# View logs:
-#   docker compose logs -f app
-#
-# Stop the application:
-#   docker compose down
-#
-# Run migrations manually:
-#   docker compose exec app alembic upgrade head
-#
-# ==========================================
+  # Main PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: quickcart_db_dev
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Audit PostgreSQL Database
+  audit_db:
+    image: postgres:15-alpine
+    container_name: quickcart_audit_db_dev
+    environment:
+      - POSTGRES_DB=${AUDIT_POSTGRES_DB}
+      - POSTGRES_USER=${AUDIT_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${AUDIT_POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - audit_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${AUDIT_POSTGRES_USER} -d ${AUDIT_POSTGRES_DB}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: quickcart_redis_dev
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  audit_postgres_data:
