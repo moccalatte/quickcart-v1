@@ -51,8 +51,9 @@ QuickCart is a Telegram auto-order bot for digital products (e.g., tutorials, pr
 
 ### 2.2. Product Browsing & Ordering
 
-- **[Kategori]**: Shows categories as inline buttons (`[Tanpa Kategori] [Kategori 1] ... [Kembali]`).
-  - Selecting a category lists products in that category, paginated, with `[KEMBALI] [SELANJUTNYA 1/{total_page}]`.
+- **[Kategori]**: When a user clicks the `[Kategori]` button, the bot will dynamically generate and display buttons for all product categories currently available in the database.
+  - If an admin adds a product using the `/add` command without specifying a category, it will automatically be assigned to the "Tanpa Kategori" category, which will also appear as a button if it contains any products.
+  - Selecting a category lists its products (paginated) with navigation buttons: `[KEMBALI] [SELANJUTNYA 1/{total_page}]`.
 
 - **[Terlaris]**: Lists best-selling products, with `[Kembali] [Top Buyers]`.
 
@@ -123,7 +124,7 @@ QuickCart is a Telegram auto-order bot for digital products (e.g., tutorials, pr
 
 | Command         | Description                                   | Example Format                       |
 |-----------------|-----------------------------------------------|--------------------------------------|
-| `/add`          | Add new product                               | `/add 101|Netflix|Streaming|50000|Akun premium.` |
+| `/add`          | Add new product. Fields `product_id`, `category`, and `description` are optional.<br>- Omit `product_id` or use `-` to auto-generate the smallest available numeric ID.<br>- Omit `category` or use `-` to default to 'Tanpa Kategori'.<br>- Omit `description` or use `-` to default to 'no description'. | `/add -|Netflix|-|50000|-`<br>or<br>`/add 101|Netflix|Streaming|50000|Desc.` |
 | `/addstock`     | Add stock to product (bulk via newline)       | `/addstock 101|akun1:pass1`          |
 | `/del`          | Delete product (soft delete)                  | `/del 101`                           |
 | `/delstock`     | Delete specific stock by ID                   | `/delstock 101|STCK5XYZ`             |
