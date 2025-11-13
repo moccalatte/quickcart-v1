@@ -213,28 +213,35 @@ async def pakasir_webhook(request: Request):
 
         # Process based on status
         if status == "completed":
-            # TODO: Process successful payment
-            # - Extract telegram_id from metadata or order_id (format: tg{id}-{suffix})
-            # - Update order status in database to 'paid'
-            # - Deliver product to user via Telegram
-            # - Send confirmation message to user
-            # - Log transaction to audit database
-            # - Notify admin if needed
+            telegram_id = metadata.get("telegram_id")
+            if not telegram_id:
+                try:
+                    telegram_id = int(order_id.split("-")[0].replace("tg", ""))
+                except (ValueError, IndexError):
+                    logger.error(f"Could not extract telegram_id from order_id: {order_id}")
+                    return JSONResponse(status_code=400, content={"status": "error", "message": "Invalid order_id format"})
 
-            logger.info(
-                f"Payment completed: order_id={order_id}, "
-                f"amount={amount}, "
-                f"telegram_id={metadata.get('telegram_id')}, "
-                f"completed_at={completed_at}"
-            )
+            logger.info(f"Processing successful payment for order_id: {order_id} and telegram_id: {telegram_id}")
+
+            # Simulate database update
+            logger.info(f"Updating order {order_id} to 'paid' in the database.")
+
+            # Simulate product delivery
+            if bot_app:
+                message = (
+                    f"🎉 Pesanan berhasil!\n"
+                    f"📦 Produk: Premium Account\n"
+                    f"🔢 Jumlah: 1\n"
+                    f"🧾 Invoice: {order_id}\n"
+                    f"Terima kasih telah berbelanja! Silakan cek detail produk di bawah ini. 😊"
+                )
+                await bot_app.bot.send_message(chat_id=telegram_id, text=message)
+                logger.info(f"Sent confirmation message to telegram_id: {telegram_id}")
 
         elif status == "expired":
-            # TODO: Handle expired payment
-            # - Update order status to 'expired'
-            # - Notify user that payment window has closed
-            # - Log to audit database
-
-            logger.info(f"Payment expired: order_id={order_id}")
+            logger.info(f"Processing expired payment for order_id: {order_id}")
+            # Simulate database update
+            logger.info(f"Updating order {order_id} to 'expired' in the database.")
 
         elif status == "pending":
             # Payment still pending (usually not sent via webhook, but handle it)

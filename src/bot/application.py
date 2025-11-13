@@ -11,12 +11,13 @@ from telegram.ext import (
     Application,
     CallbackQueryHandler,
     CommandHandler,
-    ConversationHandler,
     MessageHandler,
     filters,
 )
 
 from src.core.config import settings
+from src.handlers.public.start import start as start_command
+from src.handlers.callbacks.menu_callbacks import handle_menu_callback
 
 logger = logging.getLogger(__name__)
 
@@ -65,18 +66,6 @@ ADMIN_BROADCAST = 50
 # =============================================================================
 # Placeholder Handlers (will be replaced with actual implementations)
 # =============================================================================
-
-
-async def start_command(update: Update, context):
-    """
-    /start command - Welcome message and onboarding
-    Reference: plans.md Section 2.1
-    """
-    user = update.effective_user
-    await update.message.reply_text(
-        f"Welcome {user.first_name}! This is a placeholder.\n"
-        "Full implementation coming soon."
-    )
 
 
 async def help_command(update: Update, context):
@@ -186,54 +175,8 @@ async def callback_query_handler(update: Update, context):
     # Route to appropriate handler based on callback data prefix
     if callback_data.startswith("menu:"):
         await handle_menu_callback(update, context)
-    elif callback_data.startswith("product:"):
-        await handle_product_callback(update, context)
-    elif callback_data.startswith("qty:"):
-        await handle_quantity_callback(update, context)
-    elif callback_data.startswith("pay:"):
-        await handle_payment_callback(update, context)
-    elif callback_data.startswith("account:"):
-        await handle_account_callback(update, context)
-    elif callback_data.startswith("deposit:"):
-        await handle_deposit_callback(update, context)
     else:
         await query.edit_message_text("Feature coming soon!")
-
-
-async def handle_menu_callback(update: Update, context):
-    """Handle menu navigation callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Menu callback: {query.data}")
-
-
-async def handle_product_callback(update: Update, context):
-    """Handle product selection callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Product callback: {query.data}")
-
-
-async def handle_quantity_callback(update: Update, context):
-    """Handle quantity adjustment callbacks"""
-    query = update.callback_query
-    await query.answer("Quantity adjusted")
-
-
-async def handle_payment_callback(update: Update, context):
-    """Handle payment method callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Payment callback: {query.data}")
-
-
-async def handle_account_callback(update: Update, context):
-    """Handle account management callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Account callback: {query.data}")
-
-
-async def handle_deposit_callback(update: Update, context):
-    """Handle deposit callbacks"""
-    query = update.callback_query
-    await query.edit_message_text(f"Deposit callback: {query.data}")
 
 
 # =============================================================================
